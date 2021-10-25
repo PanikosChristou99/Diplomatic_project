@@ -39,6 +39,8 @@ services:
       PYTHONUNBUFFERED: 1
     # depends_on:
     #   - cloud
+    limits:
+          memory: "1g"
 
   worker:
     build: ./worker
@@ -46,6 +48,8 @@ services:
       - edge
     environment:
       PYTHONUNBUFFERED: 1
+      limits:
+          memory: "1g"
 # volumes:
 #   tensorflow_serving_data:
 #     driver: local
