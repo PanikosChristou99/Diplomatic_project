@@ -24,12 +24,14 @@ services:
   #   depends_on:
   #     - mongodb
 
-  # cloud:
-  #   build: ./cloud
-  #   ports:
-  #     - "8080:8080"
-  #   depends_on:
-  #     - mongoseed
+  cloud:
+    build: ./cloud
+    ports:
+      - "5001:5001"
+    environment:
+      PYTHONUNBUFFERED: 1
+    # depends_on:
+    #   - mongoseed
 
   edge:
     build: ./edge
@@ -37,11 +39,11 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-    # depends_on:
-    #   - cloud
+    depends_on:
+      - cloud
 
-  workloader_post:
-    build: ./workloader_post
+  workload_sender:
+    build: ./workload_sender
     depends_on:
       - edge
     environment:

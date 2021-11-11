@@ -13,9 +13,12 @@ dataset = foz.load_zoo_dataset(
     dataset_name="coco-2017-val",
     max_samples=500)
 
+i = 0
 
 while True:
-    print('in loop!')
+    i += 1
+
+    print(f'Workloader got in loop for the {i}th time')
     predictions_view = dataset.take(5)
 
     dicts = {}
@@ -40,8 +43,8 @@ while True:
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
         #  % S', time.localtime(1347517370))}')
-        sleep(10)
+        sleep(20)
     except Exception as e:
-        print('Exception so sleeping')
-        sleep(10)
+        print('Couldn not send to edge so sleeping')
+        sleep(20)
         continue
