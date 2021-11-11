@@ -1,0 +1,1 @@
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command docker build --rm -f "workloader_post\Dockerfile" -t workloader_post "workloader_post"

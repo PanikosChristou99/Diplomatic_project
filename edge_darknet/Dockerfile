@@ -18,6 +18,10 @@ RUN git clone https://github.com/AlexeyAB/darknet
 
 WORKDIR /app/darknet
 
+RUN chmod a+x /app/darknet > /dev/null 2>&1
+
+RUN chmod +x *.sh
+
 RUN make > /dev/null 2>&1
 
 RUN apt install --fix-missing -y  ffmpeg libopencv-dev libgtk-3-dev python-numpy python3-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libtiff5-dev libavcodec-dev libavformat-dev libswscale-dev libxine2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libv4l-dev libtbb-dev qtbase5-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip  
@@ -26,12 +30,12 @@ RUN chmod a+x /app/darknet > /dev/null 2>&1
 
 RUN touch /app/darknet/output.txt > /dev/null 2>&1
 
-# RUN wget https://pjreddie.com/media/files/yolov2.weights  
-# RUN wget https://pjreddie.com/media/files/yolov2-tiny.weights 
-# RUN wget https://pjreddie.com/media/files/yolov3.weights  
-# RUN wget https://pjreddie.com/media/files/yolov3-tiny.weights 
-# RUN wget https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights  
-# RUN wget https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.weights 
+RUN wget https://pjreddie.com/media/files/yolov2.weights  
+RUN wget https://pjreddie.com/media/files/yolov2-tiny.weights 
+RUN wget https://pjreddie.com/media/files/yolov3.weights  
+RUN wget https://pjreddie.com/media/files/yolov3-tiny.weights 
+RUN wget https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.weights  
+RUN wget https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.weights 
 
 
 # RUN /app/darknet/darknet cfg/yolov2.cfg yolov2.weights /app/carsgraz_002.bmp  >> /app/darknet/output.txt \
@@ -41,4 +45,4 @@ RUN touch /app/darknet/output.txt > /dev/null 2>&1
 #     /app/darknet/darknet cfg/yolov4.cfg yolov4.weights /app/carsgraz_002.bmp  >> /app/darknet/output.txt \
 #     /app/darknet/darknet cfg/yolov4-tiny.cfg yolov4-tiny.weights /app/carsgraz_002.bmp  >> /app/darknet/output.txt 
 
-
+# RUN ./darknet detect ./cfg/yolov4-tiny.cfg ./yolov4-tiny.weights /app/carsgraz_002.bmp
