@@ -33,17 +33,20 @@ services:
     # depends_on:
     #   - mongoseed
 
+
+
+
   edge:
     build: ./edge
     ports:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-    depends_on:
-      - cloud
+    # depends_on:
+    #   - cloud
 
-  workload_sender:
-    build: ./workload_sender
+  workload:
+    build: ./workload
     depends_on:
       - edge
     environment:

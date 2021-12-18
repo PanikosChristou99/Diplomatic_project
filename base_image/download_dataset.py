@@ -1,3 +1,5 @@
+# Use this code do invoke fiftyone to download all the coco dataset to this image so its not re downloaded on building child docker images
+
 import fiftyone.zoo as foz
 
 dataset = foz.load_zoo_dataset(

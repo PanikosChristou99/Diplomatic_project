@@ -1,4 +1,4 @@
-FROM workloader:latest
+FROM base_image:latest
 
 COPY . /app
 

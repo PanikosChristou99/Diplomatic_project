@@ -4,13 +4,16 @@
 # ], "label": "oven", "bounding_box": [0.39053977272727275, 0.539608695652174, 0.17096590909090909, 0.30878260869565216], "supercategory": "appliance", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302ada"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "sink", "bounding_box": [0.7566193181818182, 0.5847391304347827, 0.07917613636363637, 0.015086956521739131], "supercategory": "appliance", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302adb"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "orange", "bounding_box": [0.6129829545454546, 0.8039130434782609, 0.049034090909090916, 0.06943478260869565], "supercategory": "food", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302adc"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "orange", "bounding_box": [0.6579545454545455, 0.8737391304347827, 0.04741477272727273, 0.06926086956521739], "supercategory": "food", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302add"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "orange", "bounding_box": [0.654971590909091, 0.775, 0.03332386363636364, 0.04773913043478261], "supercategory": "food", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302ade"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "orange", "bounding_box": [0.5829261363636363, 0.8130869565217391, 0.042585227272727275, 0.09217391304347826], "supercategory": "food", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302adf"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "chair", "bounding_box": [0.6873579545454546, 0.7844347826086956, 0.1459375, 0.1973913043478261], "supercategory": "furniture", "iscrowd": 0}, {"_id": {"$oid": "61829d971346ff92a0302ae0"}, "_cls": "Detection", "attributes": {}, "tags": [], "label": "orange", "bounding_box": [0.6190056818181818, 0.872, 0.040170454545454544, 0.058652173913043476], "supercategory": "food", "iscrowd": 0}]}}}
 
 
-import json
+# A function that sends to edge the dictionary
+# This function is passed to a thread to be ran and be forgotten about
+
 from time import sleep
 import requests
+from bson.json_util import dumps
 
 
 def send_to_cloud(contents: dict):
-    contents2 = json.dumps(contents)
+    contents2 = dumps(contents)
 
     print('Sending to cloud what I got ')
     try:

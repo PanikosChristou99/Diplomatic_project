@@ -1,9 +1,6 @@
-import base64
-from typing import ContextManager
 import flask_cors
 import flask
 from time import ctime
-from base64 import b64decode, decode
 from flask import jsonify
 import fiftyone.zoo as foz
 import fiftyone as fo
@@ -11,21 +8,20 @@ from PIL import Image
 import torch
 from torchvision import models
 from torchvision.transforms import functional as func
-from fiftyone import ViewField as F
 from torch import device, cuda
-import os
 import ast
-import concurrent.futures
 from helper_edge import send_to_cloud
 import asyncio
 
-
+# Load coco dataset so that we can get the classes of the images,
+# the data is already since we had built it in the base image
 dataset = foz.load_zoo_dataset(
     "coco-2017",
     split="validation",
     dataset_name="coco-2017-val",
     max_samples=500)
 
+# Get all classes the dataset contains
 classes = dataset.default_classes
 
 device = device("cuda:0" if cuda.is_available() else "cpu")
@@ -42,38 +38,26 @@ app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
 
-# Get the 10 most common classes in the dataset
-counts = dataset.count_values("ground_truth.detections.label")
-classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
-
-# images_dir = 'images_dir'
-
-# os.mkdir(images_dir)
-
 
 @app.route('/endpoint', methods=['POST'])
 async def hello():
     try:
         print('Edge got content')
         content = flask.request.get_json()
-        # print('Got content')
-        # print(content)
-        # content2 = dict(content)
-        content2 = ast.literal_eval(content)
-        dataset2 = fo.Dataset("dataset-1")
 
+        # create the dict from the json sent
+        content2 = ast.literal_eval(content)
+        dataset2 = fo.Dataset()
+
+        # Create the fiftyone dataset dict
         for _, dict2 in content2.items():
             sample = fo.Sample.from_dict(dict2)
             # print(sample)
             dataset2.add_sample(sample)
 
+        results_dict = {}
+
         for sample in dataset2:
-
-            # base_path = os.path.basename(sample.filepath)
-
-            # complete_name = os.path.join(images_dir, base_path)
-
-            # image_64_decode = base64.decodebytes(sample.data)
 
             # Load image
             image = Image.open(sample.filepath)
@@ -105,31 +89,40 @@ async def hello():
             # Save predictions to dataset
             sample["faster_rcnn"] = fo.Detections(detections=detections)
             sample.save()
+            results_dict[sample.filepath] = dict(fo.Detections(
+                detections=detections).to_dict())
 
-        high_conf_view = dataset2.filter_labels(
-            "faster_rcnn", F("confidence") > 0.75)
+        # Uncomment the below to print the report for this only
 
-        results = high_conf_view.evaluate_detections(
-            "faster_rcnn",
-            gt_field="ground_truth",
-            eval_key="eval",
-            compute_mAP=True,
-        )
+        # high_conf_view = dataset2.filter_labels(
+        #     "faster_rcnn", F("confidence") > 0.75)
 
-        # Get the 10 most common classes in the dataset
-        counts = dataset2.count_values("ground_truth.detections.label")
-        classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
+        # results = high_conf_view.evaluate_detections(
+        #     "faster_rcnn",
+        #     gt_field="ground_truth",
+        #     eval_key="eval",
+        #     compute_mAP=True,
+        # )
 
-        # Print a classification report for the top-10 classes
-        results.print_report(classes=classes_top10)
-        dataset2.delete()
+        # # Get the 10 most common classes in the dataset
+        # counts = dataset2.count_values("ground_truth.detections.label")
+        # classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
+
+        # # Print a classification report for the top-10 classes
+        # results.print_report(classes=classes_top10)
+
+        # Create a dict with the source images, and a dictionary of the resilt the edge found
+        to_send = {'contents': content,
+                   'results': results_dict}
 
         asyncio.get_event_loop().run_in_executor(
-            None, send_to_cloud, content2)  # fire and forget
+            None, send_to_cloud, to_send)  # fire and forget
+
+        dataset2.delete()
 
         return jsonify(ctime())
     except Exception as e:
-        print('Got an exception on edge so sending time')
+        print(e)
         return jsonify(ctime())
 
 

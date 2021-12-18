@@ -28,6 +28,8 @@ RUN pip3 install -r requirements.txt
 
 RUN python3 download_dataset.py
 
+RUN python3 download_models.py
+
 # RUN mkdir /root/.kaggle
 
 # RUN cp ./kaggle.json /root/.kaggle/
