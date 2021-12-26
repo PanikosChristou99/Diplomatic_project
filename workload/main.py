@@ -20,7 +20,7 @@ while True:
     i += 1
 
     print(f'Workloader got in loop for the {i}th time')
-    predictions_view = dataset.take(5)
+    predictions_view = dataset.take(4)
 
     # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
     dicts = {}
@@ -52,6 +52,7 @@ while True:
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
         #  % S', time.localtime(1347517370))}')
+
         sleep(20)
     except Exception as e:
         print('Couldn not send to edge so sleeping')

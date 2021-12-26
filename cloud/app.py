@@ -1,3 +1,6 @@
+from pymongo import MongoClient
+import sys
+from io import StringIO
 import flask_cors
 import flask
 from time import ctime
@@ -32,10 +35,34 @@ model = models.detection.retinanet_resnet50_fpn(pretrained=True)
 model.to(device)
 model.eval()
 
+# Set up mongo connection
+conn = MongoClient('mongodb://mongodb:27017/')
+db = conn.diplomatic_db
+collection = db.col
+
+
+def send_to_mongo(contents: dict):
+
+    # Insert Data
+    rec_id1 = collection.insert_one(contents)
+    print('inserted record :', rec_id1)
+
 
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
+
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio    # free up some memory
+        sys.stdout = self._stdout
 
 
 @app.route('/endpoint', methods=['POST'])
@@ -118,9 +145,6 @@ def hello():
         counts = dataset2.count_values("ground_truth.detections.label")
         classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
 
-        # Print a classification report for the top-10 classes
-        results1.print_report(classes=classes_top10)
-
         high_conf_view2 = dataset2.filter_labels(
             "faster_rcnn", F("confidence") > 0.75)
 
@@ -130,9 +154,30 @@ def hello():
             eval_key="eval2",
             compute_mAP=True,
         )
+        with Capturing() as output:
+            # Print a classification report for the top-10 classes
+            results2.print_report(classes=classes_top10)
+            # Print a classification report for the top-10 classes
+            results1.print_report(classes=classes_top10)
 
-        # Print a classification report for the top-10 classes
-        results2.print_report(classes=classes_top10)
+        half_of_output = int(len(output)/2)
+
+        out1 = "/n".join(line for line in output[:half_of_output])
+        out2 = "/n".join(line for line in output[half_of_output:])
+
+        dict1 = {
+            'report': out1,
+            'time': ctime(),
+            'model': 'retinanet_resnet'
+        }
+
+        dict2 = {
+            'report': out2,
+            'time': ctime(),
+            'model': 'faster_rcnn'
+        }
+        send_to_mongo(dict1)
+        send_to_mongo(dict2)
 
         # results.
         # to_send = {}

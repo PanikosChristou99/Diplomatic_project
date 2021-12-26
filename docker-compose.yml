@@ -1,28 +1,25 @@
 version: "3.8"
 
 services:
-  # mongodb:
-  #   image: mongo
-  #   container_name: mongodb
-  #   environment:
-  #     MONGO_INITDB_DATABASE: diplomatic_db
-  #   command: mongod --port 27017
-  #   expose:
-  #     - 27017
-  #   volumes:
-  #     - ./mongoDB/database:/data/db
-  #   restart: unless-stopped
-  #   ports:
-  #     - "27017:27017"
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_DATABASE: diplomatic_db
+    command: mongod --port 27017
+    expose:
+      - 27017
+    volumes:
+      - ./mongoDB/database:/data/db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
 
-  # mongoseed:
-  #   image: mongo
-  #   container_name: mongoseed
-  #   volumes:
-  #     - ./mongoDB/init:/init
-  #   command: mongoimport --host mongodb --db diplomatic_db --collection col --jsonArray --file /init/init.json
-  #   depends_on:
-  #     - mongodb
+  db_monitor:
+    build: ./db_monitor
+    container_name: db_monitor
+    depends_on:
+      - mongodb
 
   cloud:
     build: ./cloud
@@ -30,11 +27,8 @@ services:
       - "5001:5001"
     environment:
       PYTHONUNBUFFERED: 1
-    # depends_on:
-    #   - mongoseed
-
-
-
+    depends_on:
+      - db_monitor
 
   edge:
     build: ./edge
@@ -42,8 +36,8 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-    # depends_on:
-    #   - cloud
+    depends_on:
+      - cloud
 
   workload:
     build: ./workload
@@ -52,6 +46,12 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
 
-# volumes:
-#   tensorflow_serving_data:
-#     driver: local
+# mongoseed:
+#   image: mongo
+#   container_name: mongoseed
+#   volumes:
+#     - ./mongoDB/init:/init
+#   command: mongoimport --host mongodb --db diplomatic_db --collection col
+#     --jsonArray --file /init/init.json && python3 /init/db_monitor.py
+#   depends_on:
+#     - mongodb
