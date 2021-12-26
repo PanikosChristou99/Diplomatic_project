@@ -18,7 +18,7 @@ def send_to_cloud(contents: dict):
     print('Sending to cloud what I got ')
     try:
         res = requests.post(
-            'http://cloud:5001/endpoint', json=contents2)
+            'http://diplomatic_project_cloud_1:5001/endpoint', json=contents2)
         print('response from server:', res.text)
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
