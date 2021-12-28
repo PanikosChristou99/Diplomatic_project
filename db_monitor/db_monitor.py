@@ -1,6 +1,6 @@
 from time import sleep
 from pymongo import MongoClient
-client = MongoClient('mongodb://mongodb:27017/')
+client = MongoClient('mongodb://172.18.0.2:27017/')
 i = 0
 print('Started db_monitor')
 while True:
