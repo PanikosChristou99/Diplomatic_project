@@ -6,7 +6,7 @@ services:
     container_name: mongodb
     environment:
       MONGO_INITDB_DATABASE: diplomatic_db
-    command: mongod --port 27017
+    command: mongod --port 27017 --nojournal --profile 0
     expose:
       - 27017
     volumes:
