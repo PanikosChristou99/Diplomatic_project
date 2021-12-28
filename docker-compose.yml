@@ -6,7 +6,9 @@ services:
     container_name: mongodb
     environment:
       MONGO_INITDB_DATABASE: diplomatic_db
-    command: mongod --port 27017 --nojournal --profile 0
+    command: mongod --port 27017 --nojournal --profile 0 --setParameter
+      diagnosticDataCollectionEnabled=false
+
     expose:
       - 27017
     volumes:
@@ -14,6 +16,8 @@ services:
     restart: unless-stopped
     ports:
       - "27017:27017"
+    logging:
+      driver: "none"
 
   db_monitor:
     build: ./db_monitor
