@@ -36,7 +36,7 @@ model.to(device)
 model.eval()
 
 # Set up mongo connection
-conn = MongoClient('mongodb://172.18.0.2:27017/')
+conn = MongoClient('mongodb://mongodb:27017/')
 db = conn.diplomatic_db
 collection = db.col
 

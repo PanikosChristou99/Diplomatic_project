@@ -2,7 +2,6 @@ import os
 import requests
 from time import sleep
 import fiftyone.zoo as foz
-from random import randint
 from base64 import b64encode
 import json
 
@@ -47,7 +46,7 @@ while True:
     # Send to edge the workload its workload
     try:
         res = requests.post(
-            'http://172.18.0.5:5000/endpoint', json=dictToSend)
+            'http://edge:5000/endpoint', json=dictToSend)
         print('response from server:', res.text)
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:

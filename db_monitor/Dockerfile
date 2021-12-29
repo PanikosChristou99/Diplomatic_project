@@ -2,6 +2,6 @@ FROM python:3
 
 COPY . .
 
-RUN pip install pymongo
+RUN pip3 install pymongo
 
-CMD ["python", "db_monitor.py"]
+CMD ["python3", "db_monitor.py"]

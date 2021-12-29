@@ -20,12 +20,13 @@ services:
       driver: "none"
 
   db_monitor:
-    build: ./db_monitor
     container_name: db_monitor
+    build: ./db_monitor
     depends_on:
       - mongodb
 
   cloud:
+    container_name: cloud
     build: ./cloud
     ports:
       - "5001:5001"
@@ -35,6 +36,7 @@ services:
       - db_monitor
 
   edge:
+    container_name: edge
     build: ./edge
     ports:
       - "5000:5000"
@@ -44,6 +46,7 @@ services:
       - cloud
 
   workload:
+    container_name: workload
     build: ./workload
     depends_on:
       - edge
