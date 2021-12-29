@@ -1,6 +1,15 @@
 from time import sleep
 from pymongo import MongoClient
+from pymongo.errors import ConnectionFailure
 client = MongoClient('mongodb://10.16.3.96:27017/')
+
+try:
+    # The ismaster command is cheap and does not require auth.
+    client.admin.command('ismaster')
+except Exception as e:
+    print(e)
+    exit(0)
+
 i = 0
 print('Started db_monitor')
 while True:

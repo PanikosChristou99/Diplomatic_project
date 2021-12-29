@@ -18,12 +18,16 @@ services:
       - "27017:27017"
     logging:
       driver: "none"
+    dns: <DNS server IP>
 
   db_monitor:
     container_name: db_monitor
     build: ./db_monitor
     depends_on:
       - mongodb
+    environment:
+      PYTHONUNBUFFERED: 1
+    dns: <DNS server IP>
 
   cloud:
     container_name: cloud
@@ -34,6 +38,7 @@ services:
       PYTHONUNBUFFERED: 1
     depends_on:
       - db_monitor
+    dns: <DNS server IP>
 
   edge:
     container_name: edge
@@ -44,6 +49,7 @@ services:
       PYTHONUNBUFFERED: 1
     depends_on:
       - cloud
+    dns: <DNS server IP>
 
   workload:
     container_name: workload
@@ -52,6 +58,7 @@ services:
       - edge
     environment:
       PYTHONUNBUFFERED: 1
+    dns: <DNS server IP>
 
 # mongoseed:
 #   image: mongo
