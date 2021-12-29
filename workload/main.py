@@ -46,7 +46,7 @@ while True:
     # Send to edge the workload its workload
     try:
         res = requests.post(
-            'http://edge:5000/endpoint', json=dictToSend)
+            'http://10.16.3.96:5000/endpoint', json=dictToSend)
         print('response from server:', res.text)
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
