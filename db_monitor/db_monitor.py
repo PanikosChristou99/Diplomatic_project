@@ -1,7 +1,7 @@
 from time import sleep
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-client = MongoClient('mongodb://10.16.3.96:27017/')
+client = MongoClient('mongodb://mongodb:27017/')
 
 try:
     # The ismaster command is cheap and does not require auth.
