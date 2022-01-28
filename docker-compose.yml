@@ -1,64 +1,77 @@
 version: "3"
 
 services:
-  mongodb:
-    image: mongo
-    container_name: mongodb
-    environment:
-      MONGO_INITDB_DATABASE: diplomatic_db
-    command: mongod --port 27017 --nojournal --profile 0 --setParameter
-      diagnosticDataCollectionEnabled=false
+  # mongodb:
+  #   image: mongo
+  #   container_name: mongodb
+  #   environment:
+  #     MONGO_INITDB_DATABASE: diplomatic_db
+  #   command: mongod --port 27017 --nojournal --profile 0 --setParameter diagnosticDataCollectionEnabled=false
+  #   expose:
+  #     - 27017
+  #   volumes:
+  #     - ./mongoDB/database:/data/db
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   logging:
+  #     driver: "none"
+  #   dns: <DNS server IP>
 
-    expose:
-      - 27017
-    volumes:
-      - ./mongoDB/database:/data/db
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    logging:
-      driver: "none"
-    dns: <DNS server IP>
+  # db_monitor:
+  #   container_name: db_monitor
+  #   build: ./db_monitor
+  #   depends_on:
+  #     - mongodb
+  #   environment:
+  #     PYTHONUNBUFFERED: 1
+  #   dns: <DNS server IP>
 
-  db_monitor:
-    container_name: db_monitor
-    build: ./db_monitor
-    depends_on:
-      - mongodb
-    environment:
-      PYTHONUNBUFFERED: 1
-    dns: <DNS server IP>
+  # # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_fpn, retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
+  # cloud:
+  #   container_name: cloud
+  #   build: ./cloud
+  #   ports:
+  #     - "5001:5001"
+  #   environment:
+  #     PYTHONUNBUFFERED: 1
+  #     ML: 'maskrcnn_resnet50_fpn'
+  #   depends_on:
+  #     - db_monitor
+  #   dns: <DNS server IP>
 
-  cloud:
-    container_name: cloud
-    build: ./cloud
-    ports:
-      - "5001:5001"
-    environment:
-      PYTHONUNBUFFERED: 1
-    depends_on:
-      - db_monitor
-    dns: <DNS server IP>
-
-  edge:
-    container_name: edge
+  edge1:
+    container_name: edge1
     build: ./edge
     ports:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-    depends_on:
-      - cloud
+      ML: 'retinanet_resnet50_fpn'
+    depends_on: # - cloud
+    dns: <DNS server IP>
+
+  edge2:
+    container_name: edge2
+    build: ./edge
+    ports:
+      - "5000:5000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      Preprocessing: quality,95,BW,1,resize_width,95%,resize_height,720
+      ML: 'maskrcnn_resnet50_fpn'
+    depends_on: # - cloud
     dns: <DNS server IP>
 
   workload:
     container_name: workload
     build: ./workload
     depends_on:
-      - edge
+      - cloud
     environment:
       PYTHONUNBUFFERED: 1
-    dns: <DNS server IP>
+      Edges: edge1,edge2
+      dns: <DNS server IP>
 
 # mongoseed:
 #   image: mongo

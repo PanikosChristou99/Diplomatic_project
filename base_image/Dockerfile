@@ -26,6 +26,10 @@ RUN pip3 install --upgrade Pillow
 
 RUN pip3 install -r requirements.txt 
 
+RUN pip3 install flask[async]
+
+RUN pip3 install pymongo
+
 RUN python3 download_dataset.py
 
 RUN python3 download_models.py

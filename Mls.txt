@@ -1,0 +1,30 @@
+ 'fasterrcnn_mobilenet_v3_large_320_fpn': <function torchvision.models.detection.faster_rcnn.fasterrcnn_mobilenet_v3_large_320_fpn>,
+ 'fasterrcnn_mobilenet_v3_large_fpn': <function torchvision.models.detection.faster_rcnn.fasterrcnn_mobilenet_v3_large_fpn>,
+ 'fasterrcnn_resnet50_fpn': <function torchvision.models.detection.faster_rcnn.fasterrcnn_resnet50_fpn>,
+ 'retinanet_resnet50_fpn': <function torchvision.models.detection.retinanet.retinanet_resnet50_fpn>,
+ 'maskrcnn_resnet50_fpn': <function torchvision.models.detection.mask_rcnn.maskrcnn_resnet50_fpn>, 'retinanet_resnet50_fpn': <function torchvision.models.detection.retinanet.retinanet_resnet50_fpn>,
+
+model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+model.to(device)
+model.eval()
+
+
+model2 = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
+model2.to(device)
+model2.eval()
+
+
+model3 = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True)
+model3.to(device)
+model3.eval()
+
+
+model4 = torchvision.models.detection.retinanet_resnet50_fpn(pretrained=True)
+model4.to(device)
+model4.eval()
+
+
+model5 = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
+model5.to(device)
+model5.eval()
+
