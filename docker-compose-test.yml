@@ -1,0 +1,23 @@
+version: "3"
+#make sure preferences no comma last
+services:
+
+  workload:
+    container_name: test
+    build: ./test
+    # depends_on:- cloud
+    environment:
+      PYTHONUNBUFFERED: 1
+      ML: maskrcnn_resnet50_fpn
+      Preprocessing: BW,1,resize,25%,quality,25%
+    dns: <DNS server IP>
+
+# mongoseed:
+#   image: mongo
+#   container_name: mongoseed
+#   volumes:
+#     - ./mongoDB/init:/init
+#   command: mongoimport --host mongodb --db diplomatic_db --collection col
+#     --jsonArray --file /init/init.json && python3 /init/db_monitor.py
+#   depends_on:
+#     - mongodb

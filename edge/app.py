@@ -12,6 +12,8 @@ from torch import device, cuda
 import ast
 from helper_edge import send_to_cloud
 import asyncio
+from os import environ
+
 
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
@@ -28,8 +30,17 @@ device = device("cuda:0" if cuda.is_available() else "cpu")
 
 torch.set_num_threads(1)
 
+
 # Load a pre-trained Faster R-CNN model
 model = models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+
+# if we have a custom ML then use that
+if 'ML' in environ:
+    model_name = environ['ML']
+    method = getattr(models.detection, model_name)
+    model = method(pretrained=True)
+
+
 model.to(device)
 model.eval()
 

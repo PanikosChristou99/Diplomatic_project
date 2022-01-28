@@ -71,7 +71,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
-      dns: <DNS server IP>
+    dns: <DNS server IP>
 
 # mongoseed:
 #   image: mongo
