@@ -2,6 +2,9 @@
 # A function that sends to edge the dictionary
 # This function is passed to a thread to be ran and be forgotten about
 
+from io import StringIO
+import sys
+from pymongo import MongoClient
 from base64 import b64encode
 from os import environ, getcwd, path, remove
 from time import sleep
@@ -11,6 +14,7 @@ import fiftyone.zoo as foz
 from PIL import Image
 from torchvision.transforms import functional as func
 import fiftyone as fo
+from fiftyone import ViewField as F
 
 
 def load_dataset():
@@ -159,3 +163,28 @@ def print_rep(dataset2, edge_ml_name):
     # Print a classification report for the top-10 classes
     print('Results for ', edge_ml_name, " are:")
     results.print_report(classes=classes_top10)
+
+
+# Set up mongo connection
+conn = MongoClient('mongodb://mongodb:27017/')
+db = conn.diplomatic_db
+collection = db.col
+
+
+def send_to_mongo(contents: dict):
+
+    # Insert Data
+    rec_id1 = collection.insert_one(contents)
+    print('inserted record :', rec_id1)
+
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio    # free up some memory
+        sys.stdout = self._stdout

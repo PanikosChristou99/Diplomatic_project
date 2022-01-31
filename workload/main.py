@@ -1,59 +1,59 @@
-import os
-import requests
+from asyncio import get_event_loop
+from os import environ
 from time import sleep
-import fiftyone.zoo as foz
 from base64 import b64encode
 import json
 
+from workload.workload_helper import load_dataset, print_images_names, run_send_thread
+
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
-dataset = foz.load_zoo_dataset(
-    "coco-2017",
-    split="validation",
-    dataset_name="coco-2017-val",
-    max_samples=500)
+dataset = load_dataset()
+
+if 'Edges' not in environ:
+    print('You did not specfy the edges. Please use the format "Edges: edge1,edge2"')
+
+edges_str = environ['Edges']
+
+edges = edges_str.split(',')
 
 i = 0
-
 while True:
     i += 1
 
     print(f'Workloader got in loop for the {i}th time')
-    predictions_view = dataset.take(4)
 
-    # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
-    dicts = {}
-    # This dict is the same as above but without the picture encoded, I print this some tims to debug stuff
-    dict_no_data = {}
+    for edge in edges:
 
-    for sample in predictions_view:
-        with open(sample.filepath, "rb") as image:
-            # Add to the smaller the dct the data for thsi sample
-            dict_no_data[sample['id']] = sample.to_dict()
-            # Write the base64 encoded image to the Sample
-            sample['data'] = b64encode(image.read()).decode('utf-8')
-            # Add the sample to the dict to be sent as workload
-            dicts[sample['id']] = sample.to_dict()
+        name_dict = {'edge_name': edge}
 
-    # Dump the dictionary as a string
-    dictToSend = json.dumps(dicts)
+        predictions_view = dataset.take(4)
 
-    # Print the images names we are sending to ensure we are sending different images each time
-    for a, b in dict_no_data.items():
-        base_path = os.path.basename(b['filepath'])
-        print(base_path)
+        # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
+        dicts = {}
+        # This dict is the same as above but without the picture encoded, I print this some tims to debug stuff
+        dict_no_data = {}
 
-    # Send to edge the workload its workload
-    try:
-        res = requests.post(
-            'http://edge:5000/endpoint', json=dictToSend)
-        print('response from server:', res.text)
-        # time_rec = res.text['']
-        # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
-        #  % S', time.localtime(1347517370))}')
+        for sample in predictions_view:
+            with open(sample.filepath, "rb") as image:
+                # Add to the smaller the dct the data for thsi sample
+                dict_no_data[sample['id']] = sample.to_dict()
+                # Write the base64 encoded image to the Sample
+                sample['data'] = b64encode(image.read()).decode('utf-8')
+                # Add the sample to the dict to be sent as workload
+                dicts[sample['id']] = sample.to_dict()
 
-        sleep(20)
-    except Exception as e:
-        print('Couldn not send to edge so sleeping')
-        sleep(20)
-        continue
+        # Print the images names we are sending to ensure we are sending different images each time
+        print_images_names(dict_no_data)
+
+        to_send = {"name_dict": name_dict, 'sample_dict': dicts}
+
+        # Dump the dictionary as a string
+        dictToSend = json.dumps(to_send)
+        edge_url = 'http://' + edge + ':5000/endpoint'
+
+        # Send to edge the workload its workload
+        get_event_loop().run_in_executor(
+            None, run_send_thread, dictToSend, edge_url)  # fire and forget
+
+    sleep(20)

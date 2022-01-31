@@ -58,8 +58,8 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-      Preprocessing: quality,95,BW,1,resize_width,95%,resize_height,720
-      ML: 'maskrcnn_resnet50_fpn'
+      ML: maskrcnn_resnet50_fpn
+      Preprocessing: BW,1,resize,25%,quality,25%
     depends_on: # - cloud
     dns: <DNS server IP>
 

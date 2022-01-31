@@ -1,4 +1,6 @@
-from pymongo import MongoClient
+from base64 import b64decode
+import io
+from os import environ
 import sys
 from io import StringIO
 import flask_cors
@@ -11,17 +13,14 @@ from PIL import Image
 import torch
 from torchvision import models
 from torchvision.transforms import functional as func
-from fiftyone import ViewField as F
 from torch import device, cuda
 from bson.json_util import loads
 
+from cloud.helper_cloud import load_dataset, predict, print_rep
+
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
-dataset = foz.load_zoo_dataset(
-    "coco-2017",
-    split="validation",
-    dataset_name="coco-2017-val",
-    max_samples=500)
+dataset = load_dataset()
 
 # Get all classes the dataset contains
 classes = dataset.default_classes
@@ -30,39 +29,23 @@ device = device("cuda:0" if cuda.is_available() else "cpu")
 
 torch.set_num_threads(3)
 
-# Load a resnet50 model
-model = models.detection.retinanet_resnet50_fpn(pretrained=True)
-model.to(device)
-model.eval()
+# Create model pointer and name
+model = None
+model_name = ""
 
-# Set up mongo connection
-conn = MongoClient('mongodb://mongodb:27017/')
-db = conn.diplomatic_db
-collection = db.col
-
-
-def send_to_mongo(contents: dict):
-
-    # Insert Data
-    rec_id1 = collection.insert_one(contents)
-    print('inserted record :', rec_id1)
+# if we have a custom ML then use that
+if 'ML' in environ:
+    model_name = environ['ML']
+    method = getattr(models.detection, model_name)
+    model = method(pretrained=True)
+    print('Using ', model_name)
+    model.to(device)
+    model.eval()
 
 
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
-
-
-class Capturing(list):
-    def __enter__(self):
-        self._stdout = sys.stdout
-        sys.stdout = self._stringio = StringIO()
-        return self
-
-    def __exit__(self, *args):
-        self.extend(self._stringio.getvalue().splitlines())
-        del self._stringio    # free up some memory
-        sys.stdout = self._stdout
 
 
 @app.route('/endpoint', methods=['POST'])
@@ -71,113 +54,81 @@ def hello():
         print('Cloud got content')
         content = flask.request.get_json()
 
-        # Create the dict of 2 dicts from the json sent
+        # Create the dict of the dicts from the json sent
         content2 = loads(content)
 
         # Create the fiftyone dataset dict
-        source = loads(content2['contents'])
-
-        # first_value = list(source.values())[0]
-        # print('First Value: ', first_value)
-
-        # Create the previous results dictionary
-        results_prev = content2['results']
-
-        # second_value = list(results_prev.values())[0]
-        # print('Second Value: ', second_value)
+        samples_dict = loads(content2['samples_dict'])
 
         dataset2 = fo.Dataset()
 
         # Fill the dataset with the data recieved
-        for _, dict2 in source.items():
+        for _, dict2 in samples_dict.items():
             sample = fo.Sample.from_dict(dict2)
             # print(sample)
             dataset2.add_sample(sample)
 
+        # Store ML results here
+        results_dict = {}
+        sample_dict = {}
+
         for sample in dataset2:
 
             # Load image
-            image = Image.open(sample.filepath)
-            image = func.to_tensor(image).to(device)
-            c, h, w = image.shape
 
-            # Perform inference
-            preds = model([image])[0]
-            labels = preds["labels"].cpu().detach().numpy()
-            scores = preds["scores"].cpu().detach().numpy()
-            boxes = preds["boxes"].cpu().detach().numpy()
+            # image_data = b64decode(sample.data)
+            # dec_data = open(sample.data, mode="r", encoding="utf-8")
+            image_data = b64decode(sample.data)
+            image = Image.open(io.BytesIO(image_data))
 
-            # Convert detections to FiftyOne format
-            detections = []
-            for label, score, box in zip(labels, scores, boxes):
-                # Convert to [top-left-x, top-left-y, width, height]
-                # in relative coordinates in [0, 1] x [0, 1]
-                x1, y1, x2, y2 = box
-                rel_box = [x1 / w, y1 / h, (x2 - x1) / w, (y2 - y1) / h]
+            # if model is assigned so we need to detect
+            if model_name:
 
-                detections.append(
-                    fo.Detection(
-                        label=classes[label],
-                        bounding_box=rel_box,
-                        confidence=score
-                    )
-                )
+                res_name = "cloud_"+environ['ML']
+                detections = predict(image, device, model, classes)
 
-            # Save predictions to dataset
-            sample["retinanet_resnet"] = fo.Detections(detections=detections)
-            sample["faster_rcnn"] = fo.Detections.from_dict(
-                results_prev[sample.filepath])
-            sample.save()
+                # Save predictions to dataset as the name of edge and m
+                sample[res_name] = fo.Detections(
+                    detections=detections)
+                # Update sample with this ML res
+                sample.save()
+                sample_dict[sample['id']] = sample.to_dict()
 
-        # Get the predictions we are only really confident about
-        high_conf_view = dataset2.filter_labels(
-            "retinanet_resnet", F("confidence") > 0.75)
+                # Add them to the sent dict as well
+                results_dict[sample.filepath] = dict(fo.Detections(
+                    detections=detections).to_dict())
 
-        # Evaluate if we were correct
-        results1 = high_conf_view.evaluate_detections(
-            "retinanet_resnet",
-            gt_field="ground_truth",
-            eval_key="eval1",
-            compute_mAP=True,
-        )
+                # uncomment this to pritn report
+                print_rep(dataset2, res_name)
 
-        # Get the 10 most common classes in the dataset
-        counts = dataset2.count_values("ground_truth.detections.label")
-        classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
+        # the edge ran an ML so lets find its results
+        if 'results_ML_name' in content2:
+            print_rep(dataset2, content2['results_ML_name'])
 
-        high_conf_view2 = dataset2.filter_labels(
-            "faster_rcnn", F("confidence") > 0.75)
+        # with Capturing() as output:
+        #     # Print a classification report for the top-10 classes
+        #     results2.print_report(classes=classes_top10)
+        #     # Print a classification report for the top-10 classes
+        #     results1.print_report(classes=classes_top10)
 
-        results2 = high_conf_view2.evaluate_detections(
-            "faster_rcnn",
-            gt_field="ground_truth",
-            eval_key="eval2",
-            compute_mAP=True,
-        )
-        with Capturing() as output:
-            # Print a classification report for the top-10 classes
-            results2.print_report(classes=classes_top10)
-            # Print a classification report for the top-10 classes
-            results1.print_report(classes=classes_top10)
+        # half_of_output = int(len(output)/2)
 
-        half_of_output = int(len(output)/2)
+        # out1 = "/n".join(line for line in output[:half_of_output])
+        # out2 = "/n".join(line for line in output[half_of_output:])
 
-        out1 = "/n".join(line for line in output[:half_of_output])
-        out2 = "/n".join(line for line in output[half_of_output:])
+        # dict1 = {
+        #     'report': out1,
+        #     'time': ctime(),
+        #     'model': 'retinanet_resnet'
+        # }
 
-        dict1 = {
-            'report': out1,
-            'time': ctime(),
-            'model': 'retinanet_resnet'
-        }
-
-        dict2 = {
-            'report': out2,
-            'time': ctime(),
-            'model': 'faster_rcnn'
-        }
-        send_to_mongo(dict1)
-        send_to_mongo(dict2)
+        # dict2 = {
+        #     'report': out2,
+        #     'time': ctime(),
+        #     'model': 'faster_rcnn'
+        # }
+        # send_to_mongo(dict1)
+        # send_to_mongo(dict2)
 
         # results.
         # to_send = {}

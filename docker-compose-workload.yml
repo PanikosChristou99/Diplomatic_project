@@ -3,13 +3,12 @@ version: "3"
 services:
 
   workload:
-    container_name: test
-    build: ./test
+    container_name: workload
+    build: ./workload
     # depends_on:- cloud
     environment:
       PYTHONUNBUFFERED: 1
-      ML: maskrcnn_resnet50_fpn
-      Preprocessing: BW,0,resize,100%,quality,100%
+      Edges: edge1,edge2
     dns: <DNS server IP>
 
 # mongoseed:
