@@ -36,6 +36,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'maskrcnn_resnet50_fpn'
+      Port: 5000
     depends_on:
       - db_monitor
     dns: <DNS server IP>
@@ -48,7 +49,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'retinanet_resnet50_fpn'
-      Port: '5001'
+      Port: 5001
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -62,7 +63,7 @@ services:
       PYTHONUNBUFFERED: 1
       ML: maskrcnn_resnet50_fpn
       Preprocessing: BW,1,resize,25%,quality,25%
-      Port: '5001'
+      Port: 5002
     depends_on:
       - cloud
     dns: <DNS server IP>
