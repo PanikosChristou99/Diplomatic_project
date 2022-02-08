@@ -134,9 +134,9 @@ async def hello():
         print(e)
         return jsonify(ctime())
 
-if 'Port' not in environ:
-    print('Did not specify "Port"')
-    exit(1)
+# if 'Port' not in environ:
+#     print('Did not specify "Port"')
+#     exit(1)
 
-port = int(environ['Port'])
-app.run(host='0.0.0.0', port=port)
+# port = int(environ['Port'])
+app.run(host='0.0.0.0', port=5000)
