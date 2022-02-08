@@ -11,6 +11,7 @@ import fiftyone.zoo as foz
 import fiftyone as fo
 from PIL import Image
 from psutil import cpu_percent
+import psutil
 import torch
 from torchvision import models
 from torchvision.transforms import functional as func
