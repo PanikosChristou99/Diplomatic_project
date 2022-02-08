@@ -4,3 +4,4 @@ requests
 fiftyone
 Flask
 Flask_Cors
+psutil

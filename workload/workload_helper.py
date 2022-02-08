@@ -2,6 +2,7 @@ from ast import Dict
 import json
 from os import path
 import fiftyone.zoo as foz
+import psutil
 import requests
 
 # I help clearing out the main file
@@ -38,3 +39,8 @@ def print_images_names(dict_no_data: dict):
     for a, b in dict_no_data.items():
         base_path = path.basename(b['filepath'])
         print(base_path)
+
+
+def print_cpu(string: str, p=psutil.Process()):
+    perc = p.cpu_percent()
+    print(string, perc, '%')

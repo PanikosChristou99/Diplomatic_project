@@ -5,6 +5,8 @@
 from base64 import b64encode
 from os import environ, getcwd, path, remove
 from time import sleep
+from psutil import cpu_percent
+import psutil
 import requests
 from bson.json_util import dumps
 import fiftyone.zoo as foz
@@ -159,3 +161,8 @@ def print_rep(dataset2, edge_ml_name):
     # Print a classification report for the top-10 classes
     print('Results for ', edge_ml_name, " are:")
     results.print_report(classes=classes_top10)
+
+
+def print_cpu(string: str, p=psutil.Process()):
+    perc = p.cpu_percent()
+    print(string, perc, '%')

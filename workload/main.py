@@ -4,7 +4,13 @@ from time import sleep
 from base64 import b64encode
 import json
 
+from joblib import PrintTime
+from psutil import cpu_percent, Process
+
 from workload.workload_helper import load_dataset, print_images_names, run_send_thread
+
+# first cpu call to start counting
+Process().cpu_percent()
 
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
@@ -17,7 +23,19 @@ edges_str = environ['Edges']
 
 edges = edges_str.split(',')
 
+num_of_images = 5
+
+if "Images" in environ:
+    num_of_images = int(environ["Images"])
+
+sleep_time = 20
+if "Sleep" in environ:
+    sleep_time = int(environ["Sleep"])
+
+
 i = 0
+
+print('Starting workloader with :', cpu_percent(), '%')
 while True:
     i += 1
 
@@ -27,7 +45,7 @@ while True:
 
         name_dict = {'edge_name': edge}
 
-        predictions_view = dataset.take(4)
+        predictions_view = dataset.take(num_of_images)
 
         # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
         dicts = {}
@@ -55,5 +73,8 @@ while True:
         # Send to edge the workload its workload
         get_event_loop().run_in_executor(
             None, run_send_thread, dictToSend, edge_url)  # fire and forget
+    perc = cpu_percent()
+    print(
+        f'Finished the {i}th workload send with {perc} % and goint to sleep for {sleep_time}')
 
-    sleep(20)
+    sleep(sleep_time)

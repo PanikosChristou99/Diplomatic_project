@@ -3,7 +3,10 @@
 # This function is passed to a thread to be ran and be forgotten about
 
 from io import StringIO
+from multiprocessing.dummy import Process
 import sys
+from psutil import cpu_percent
+import psutil
 from pymongo import MongoClient
 from base64 import b64encode
 from os import environ, getcwd, path, remove
@@ -188,3 +191,8 @@ class Capturing(list):
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio    # free up some memory
         sys.stdout = self._stdout
+
+
+def print_cpu(string: str, p=psutil.Process()):
+    perc = p.cpu_percent()
+    print(string, perc, '%')

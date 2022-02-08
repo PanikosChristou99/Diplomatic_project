@@ -3,3 +3,4 @@ torchvision
 requests
 fiftyone
 Pillow
+psutil

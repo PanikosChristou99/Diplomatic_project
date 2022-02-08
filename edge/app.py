@@ -5,11 +5,13 @@ import flask
 from time import ctime
 from flask import jsonify
 from PIL import Image
+from psutil import cpu_percent
+import psutil
 import torch
 from torchvision import models
 from torch import device, cuda
 import ast
-from edge.helper_edge import load_dataset, predict, preprocess_img, print_rep
+from edge.helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep
 from helper_edge import send_to_cloud
 import asyncio
 from os import environ
@@ -17,6 +19,8 @@ import io
 import warnings
 warnings.filterwarnings("ignore")
 
+# first cpu call to start counting
+psutil.Process().cpu_percent()
 
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
@@ -43,6 +47,7 @@ if 'ML' in environ:
     model.to(device)
     model.eval()
 
+print_cpu('Starting  with :')
 
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
@@ -52,7 +57,8 @@ flask_cors.CORS(app)
 @app.route('/endpoint', methods=['POST'])
 async def hello():
     try:
-        print('I got content')
+        print_cpu('I got content and the cpu util is :')
+
         content = flask.request.get_json()
 
         # create the dict from the json sent
@@ -86,14 +92,18 @@ async def hello():
             image = Image.open(io.BytesIO(image_data))
 
             if 'Preprocessing' in environ:
+                print_cpu('Before preproccesing :')
+
                 image = preprocess_img(sample, image)
+                print_cpu('After preproccesing :')
 
             # if model is assigned so we need to detect
             if model_name:
+                print_cpu('Before ML :')
                 edge_ml_name = edge_name + "_" + environ['ML']
 
                 detections = predict(image, device, model, classes)
-
+                print_cpu('After ML :')
                 # Save predictions to dataset as the name of edge and m
                 sample[edge_ml_name] = fo.Detections(
                     detections=detections)
@@ -118,6 +128,7 @@ async def hello():
             None, send_to_cloud, to_send)  # fire and forget
 
         dataset2.delete()
+        print_cpu('Done with cpu at :')
 
         return jsonify(ctime())
     except Exception as e:

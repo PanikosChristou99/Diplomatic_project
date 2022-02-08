@@ -10,6 +10,7 @@ from flask import jsonify
 import fiftyone.zoo as foz
 import fiftyone as fo
 from PIL import Image
+from psutil import cpu_percent
 import torch
 from torchvision import models
 from torchvision.transforms import functional as func
@@ -17,7 +18,10 @@ from torch import device, cuda
 from bson.json_util import loads
 
 from cloud.helper_cloud import load_dataset, predict, print_rep
+from edge.helper_edge import print_cpu
 
+# first cpu call to start counting
+psutil.Process().cpu_percent()
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
 dataset = load_dataset()
@@ -43,6 +47,8 @@ if 'ML' in environ:
     model.eval()
 
 
+print_cpu("Before starting Flask :")
+
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
@@ -51,7 +57,7 @@ flask_cors.CORS(app)
 @app.route('/endpoint', methods=['POST'])
 def hello():
     try:
-        print('Cloud got content')
+        print_cpu("Cloud got content and cpu is :")
         content = flask.request.get_json()
 
         # Create the dict of the dicts from the json sent
@@ -83,9 +89,11 @@ def hello():
 
             # if model is assigned so we need to detect
             if model_name:
+                print_cpu('Before ML :')
 
                 res_name = "cloud_"+environ['ML']
                 detections = predict(image, device, model, classes)
+                print_cpu('After ML :')
 
                 # Save predictions to dataset as the name of edge and m
                 sample[res_name] = fo.Detections(
@@ -135,6 +143,7 @@ def hello():
 
         # asyncio.get_event_loop().run_in_executor(
         #     None, send_to_db, content2)  # fire and forget
+            print_cpu('Leavig with CPU :')
 
         return jsonify(ctime())
     except Exception as e:
