@@ -18,8 +18,8 @@ from torchvision.transforms import functional as func
 from torch import device, cuda
 from bson.json_util import loads
 
-from cloud.helper_cloud import load_dataset, predict, print_rep
-from edge.helper_edge import print_cpu
+from helper_cloud import load_dataset, predict, print_rep, print_cpu
+
 
 # first cpu call to start counting
 psutil.Process().cpu_percent()
