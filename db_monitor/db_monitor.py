@@ -19,5 +19,4 @@ while True:
     print('In the Database right now we have :')
     for record in cursor:
         print(record)
-
     sleep(50)

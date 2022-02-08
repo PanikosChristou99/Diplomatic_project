@@ -7,7 +7,7 @@ import json
 from joblib import PrintTime
 from psutil import cpu_percent, Process
 
-from workload.workload_helper import load_dataset, print_images_names, run_send_thread
+from workload_helper import load_dataset, print_images_names, run_send_thread
 
 # first cpu call to start counting
 Process().cpu_percent()
