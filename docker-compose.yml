@@ -48,7 +48,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'retinanet_resnet50_fpn'
-    depends_on: # - cloud
+    depends_on: cloud
     dns: <DNS server IP>
 
   edge2:
@@ -60,7 +60,7 @@ services:
       PYTHONUNBUFFERED: 1
       ML: maskrcnn_resnet50_fpn
       Preprocessing: BW,1,resize,25%,quality,25%
-    depends_on: # - cloud
+    depends_on: cloud
     dns: <DNS server IP>
 
   workload:
@@ -73,7 +73,6 @@ services:
       Edges: edge1,edge2
       Images: 5
       Sleep: 20
-
     dns: <DNS server IP>
 
 # mongoseed:
