@@ -22,19 +22,30 @@ dataset = load_dataset()
 
 if 'Edges' not in environ:
     print('You did not specfy the edges. Please use the format "Edges: edge1,edge2"')
+    exit(1)
 
 edges_str = environ['Edges']
 
 edges = edges_str.split(',')
 
-num_of_images = 5
 
-if "Images" in environ:
-    num_of_images = int(environ["Images"])
+num_of_images = [5 for _ in edges]
 
-sleep_time = 20
-if "Sleep" in environ:
-    sleep_time = int(environ["Sleep"])
+if "Images" not in environ:
+    print('You did not Images so sending 5 to all ')
+else:
+    images_ar = environ["Images"].split(',')
+    for i, val in enumerate(images_ar):
+        num_of_images[i] = int(images_ar[i])
+
+num_of_sleeps = [40 for _ in edges]
+
+if "Sleep" not in environ:
+    print('You did not specify sleep so 40 to all ')
+else:
+    sleep_ar = environ["Sleep"].split(',')
+    for i, val in enumerate(sleep_ar):
+        num_of_sleeps[i] = int(sleep_ar[i])
 
 
 i = 0

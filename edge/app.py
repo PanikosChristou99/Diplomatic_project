@@ -112,7 +112,6 @@ async def hello():
                 edge_ml_name = edge_name + "_" + environ['ML']
 
                 detections = predict(image, device, model, classes)
-                print_cpu('After ML :')
                 # Save predictions to dataset as the name of edge and m
                 sample[edge_ml_name] = fo.Detections(
                     detections=detections)

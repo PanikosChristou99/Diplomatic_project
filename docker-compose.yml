@@ -79,8 +79,8 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
-      Images: 5
-      Sleep: 40
+      Images: 5,2
+      Sleep: 40,20
     dns: <DNS server IP>
 
 # mongoseed:
