@@ -80,7 +80,7 @@ services:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
       Images: 5
-      Sleep: 20
+      Sleep: 40
     dns: <DNS server IP>
 
 # mongoseed:

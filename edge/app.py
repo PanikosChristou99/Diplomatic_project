@@ -98,15 +98,17 @@ async def hello():
             image = Image.open(io.BytesIO(image_data))
 
             if 'Preprocessing' in environ:
-                if ind == count:
-                    print_cpu('Before preproccesing last image :')
+                if ind == 1:
+                    print_cpu('Before preproccesing first image :')
                 image = preprocess_img(sample, image)
-                if ind == count:
-                    print_cpu('After preproccesing last image :')
+                if ind == 1:
+                    print_cpu('After preproccesing first image :')
 
             # if model is assigned so we need to detect
             if model_name:
-                print_cpu('Before ML :')
+                if ind == 1:
+                    print_cpu('Before ML for firt pic:')
+
                 edge_ml_name = edge_name + "_" + environ['ML']
 
                 detections = predict(image, device, model, classes)
@@ -122,9 +124,12 @@ async def hello():
                 results_dict[sample.filepath] = dict(fo.Detections(
                     detections=detections).to_dict())
 
-        if model_name:
-            # uncomment this to pritn report
-            print_rep(dataset2, edge_ml_name)
+                if ind == 1:
+                    print_cpu('After ML for firt pic:')
+
+        # if model_name:
+        #     # uncomment this to pritn report
+        #     print_rep(dataset2, edge_ml_name)
 
         to_send = {'edge_name': edge_name, 'samples_dict': sample_dict}
 
