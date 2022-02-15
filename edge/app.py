@@ -72,18 +72,23 @@ async def hello():
 
         dataset2 = fo.Dataset()
 
+        count = 0
         # Create the fiftyone dataset dict
         for _, dict2 in content2.items():
             sample = fo.Sample.from_dict(dict2)
             # print(sample)
             dataset2.add_sample(sample)
+            count += 1
 
         # Store ML results here
         results_dict = {}
         # Store the new samples from the beggining
         sample_dict = {}
 
+        ind = 0
+
         for sample in dataset2:
+            ind += 1
 
             # Load image
 
@@ -93,10 +98,11 @@ async def hello():
             image = Image.open(io.BytesIO(image_data))
 
             if 'Preprocessing' in environ:
-                print_cpu('Before preproccesing :')
-
+                if ind == count:
+                    print_cpu('Before preproccesing last image :')
                 image = preprocess_img(sample, image)
-                print_cpu('After preproccesing :')
+                if ind == count:
+                    print_cpu('After preproccesing last image :')
 
             # if model is assigned so we need to detect
             if model_name:
@@ -116,8 +122,9 @@ async def hello():
                 results_dict[sample.filepath] = dict(fo.Detections(
                     detections=detections).to_dict())
 
-                # uncomment this to pritn report
-                print_rep(dataset2, edge_ml_name)
+        if model_name:
+            # uncomment this to pritn report
+            print_rep(dataset2, edge_ml_name)
 
         to_send = {'edge_name': edge_name, 'samples_dict': sample_dict}
 
