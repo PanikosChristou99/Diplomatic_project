@@ -6,10 +6,6 @@ services:
     container_name: mongodb
     environment:
       MONGO_INITDB_DATABASE: diplomatic_db
-      http_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      https_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
-      HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
     command: mongod --port 27017 --nojournal --profile 0 --setParameter diagnosticDataCollectionEnabled=false
     expose:
       - 27017
@@ -29,9 +25,6 @@ services:
       - mongodb
     environment:
       PYTHONUNBUFFERED: 1
-      http_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      https_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
       HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
     dns: <DNS server IP>
 
@@ -45,10 +38,6 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'maskrcnn_resnet50_fpn'
-      http_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      https_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
-      HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
     depends_on:
       - db_monitor
     dns: <DNS server IP>
@@ -62,10 +51,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'retinanet_resnet50_fpn'
-      http_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      https_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
-      HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
+      Name: edge1
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -80,10 +66,7 @@ services:
       PYTHONUNBUFFERED: 1
       ML: maskrcnn_resnet50_fpn
       Preprocessing: BW,1,resize,25%,quality,25%
-      http_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      https_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
-      HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
+      Name: edge2
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -98,10 +81,6 @@ services:
       Edges: edge1,edge2
       Images: 5
       Sleep: 20
-      http_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      https_proxy: http://proxy.cs.ucy.ac.cy:8008/
-      HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
-      HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
     dns: <DNS server IP>
 
 # mongoseed:

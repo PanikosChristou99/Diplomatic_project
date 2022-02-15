@@ -49,10 +49,14 @@ if 'ML' in environ:
     model.eval()
 
 print_cpu('Starting  with :')
-
+[]
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
+
+if 'Name' not in environ:
+    print('You did not specify edge name, please add "Name: EdgeX" at the compose file ')
+edge_name = environ['Name']
 
 
 @app.route('/endpoint', methods=['POST'])
@@ -63,14 +67,7 @@ async def hello():
         content = flask.request.get_json()
 
         # create the dict from the json sent
-        content3 = ast.literal_eval(content)
-
-        edge_name_str = content3['name_dict']
-
-        edge_name = ast.literal_eval(edge_name_str)
-        edge_name = edge_name['edge_name']
-
-        content2 = content3["sample_dict"]
+        content2 = ast.literal_eval(content)
 
         dataset2 = fo.Dataset()
 

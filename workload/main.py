@@ -47,8 +47,6 @@ while True:
 
     for edge in edges:
 
-        name_dict = {'edge_name': edge}
-
         predictions_view = dataset.take(num_of_images)
 
         # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
@@ -68,10 +66,8 @@ while True:
         # Print the images names we are sending to ensure we are sending different images each time
         print_images_names(dict_no_data)
 
-        to_send = {"name_dict": name_dict, 'sample_dict': dicts}
-
         # Dump the dictionary as a string
-        dictToSend = json.dumps(to_send)
+        dictToSend = json.dumps(dicts)
         edge_url = 'http://' + edge + ':5000/endpoint'
 
         # Send to edge the workload its workload
