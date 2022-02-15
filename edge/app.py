@@ -1,3 +1,4 @@
+from json import loads
 import fiftyone as fo
 from base64 import b64decode, b64encode
 import flask_cors
@@ -67,7 +68,7 @@ async def hello():
         content = flask.request.get_json()
 
         # create the dict from the json sent
-        content2 = ast.literal_eval(content)
+        content2 = loads(content)
 
         dataset2 = fo.Dataset()
 
