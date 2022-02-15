@@ -66,13 +66,11 @@ while True:
         # Print the images names we are sending to ensure we are sending different images each time
         print_images_names(dict_no_data)
 
-        # Dump the dictionary as a string
-        dictToSend = json.dumps(dicts)
         edge_url = 'http://' + edge + ':5000/endpoint'
 
         # Send to edge the workload its workload
         get_event_loop().run_in_executor(
-            None, run_send_thread, dictToSend, edge_url)  # fire and forget
+            None, run_send_thread, dicts, edge_url)  # fire and forget
     perc = cpu_percent()
     print(
         f'Finished the {i}th workload send with {perc} % and goint to sleep for {sleep_time}')
