@@ -9,6 +9,10 @@ from psutil import cpu_percent, Process
 
 from workload_helper import load_dataset, print_images_names, run_send_thread
 
+# By pass proxy eeror on cs dep vm
+environ['no_proxy'] = '*'
+
+
 # first cpu call to start counting
 Process().cpu_percent()
 

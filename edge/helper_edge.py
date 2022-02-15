@@ -15,6 +15,12 @@ from torchvision.transforms import functional as func
 import fiftyone as fo
 
 
+proxies = {
+    "http": None,
+    "https": None,
+}
+
+
 def load_dataset():
     dataset = foz.load_zoo_dataset(
         "coco-2017",
@@ -31,7 +37,7 @@ def send_to_cloud(contents: dict):
     print('Sending to cloud what I got ')
     try:
         res = requests.post(
-            'http://cloud:5001/endpoint', json=contents2)
+            'http://cloud:5001/endpoint', json=contents2, proxies=proxies)
         print('response from server:', res.text)
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:

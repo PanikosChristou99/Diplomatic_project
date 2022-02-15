@@ -10,6 +10,6 @@ RUN pip3 install psutil
 
 ARG Port
 
-EXPOSE ${Port}
+# EXPOSE ${Port}
 
 CMD ["python3", "app.py"]

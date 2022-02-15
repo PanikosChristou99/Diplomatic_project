@@ -5,6 +5,12 @@ import fiftyone.zoo as foz
 import psutil
 import requests
 
+proxies = {
+    "http": None,
+    "https": None,
+}
+
+
 # I help clearing out the main file
 
 
@@ -25,7 +31,7 @@ def run_send_thread(contents: dict, url: str):
     print('Sending to', url)
     try:
         res = requests.post(
-            url, json=contents2)
+            url, json=contents2, proxies=proxies)
         print('response from ', url, ' : ', res.text)
         # time_rec = res.text['']
         # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:

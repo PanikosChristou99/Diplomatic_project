@@ -39,12 +39,12 @@ services:
   cloud:
     container_name: cloud
     build: ./cloud
+    #TODO figure out if I need this since I don't use it
     ports:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'maskrcnn_resnet50_fpn'
-      Port: 5000
       http_proxy: http://proxy.cs.ucy.ac.cy:8008/
       https_proxy: http://proxy.cs.ucy.ac.cy:8008/
       HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
@@ -56,12 +56,12 @@ services:
   edge1:
     container_name: edge1
     build: ./edge
+    #TODO figure out if I need this since I don't use it
     ports:
       - "5001:5001"
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'retinanet_resnet50_fpn'
-      Port: 5001
       http_proxy: http://proxy.cs.ucy.ac.cy:8008/
       https_proxy: http://proxy.cs.ucy.ac.cy:8008/
       HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/
@@ -73,13 +73,13 @@ services:
   edge2:
     container_name: edge2
     build: ./edge
+    #TODO figure out if I need this since I don't use it
     ports:
       - "5002:5002"
     environment:
       PYTHONUNBUFFERED: 1
       ML: maskrcnn_resnet50_fpn
       Preprocessing: BW,1,resize,25%,quality,25%
-      Port: 5002
       http_proxy: http://proxy.cs.ucy.ac.cy:8008/
       https_proxy: http://proxy.cs.ucy.ac.cy:8008/
       HTTP_PROXY: http://proxy.cs.ucy.ac.cy:8008/

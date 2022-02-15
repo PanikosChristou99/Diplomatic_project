@@ -20,6 +20,7 @@ from bson.json_util import loads
 
 from helper_cloud import load_dataset, predict, print_rep, print_cpu
 
+environ['no_proxy'] = '*'
 
 # first cpu call to start counting
 psutil.Process().cpu_percent()

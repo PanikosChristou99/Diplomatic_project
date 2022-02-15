@@ -18,6 +18,8 @@ import io
 import warnings
 warnings.filterwarnings("ignore")
 
+environ['no_proxy'] = '*'
+
 # first cpu call to start counting
 psutil.Process().cpu_percent()
 
