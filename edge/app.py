@@ -65,8 +65,10 @@ async def hello():
         # create the dict from the json sent
         content3 = ast.literal_eval(content)
 
-        edge_name = content3['name_dict']
-        ['edge_name']
+        edge_name_str = content3['name_dict']
+
+        edge_name = ast.literal_eval(edge_name_str)
+        edge_name = edge_name['edge_name']
 
         content2 = content3["sample_dict"]
 
