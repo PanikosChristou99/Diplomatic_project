@@ -13,7 +13,7 @@ import fiftyone.zoo as foz
 from PIL import Image
 from torchvision.transforms import functional as func
 import fiftyone as fo
-
+from fiftyone import ViewField as F
 
 proxies = {
     "http": None,
