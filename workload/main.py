@@ -50,13 +50,13 @@ for i, edge in enumerate(edges):
 
     edge_url = 'http://' + edge + ':5000/endpoint'
 
-    time_sleep = sleep_ar[i]
-
+    time_sleep = num_of_sleeps[i]
+    images = num_of_images[i]
     # Send to edge the workload its workload
     get_event_loop().run_in_executor(
-        None, run_send_thread, edge_url, time_sleep, dataset, num_of_images)  # fire and forget
+        None, run_send_thread, edge_url, time_sleep, dataset, images)  # fire and forget
 
-i = 1
+i = 0
 
 while True:
     i += 1
