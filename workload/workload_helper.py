@@ -1,6 +1,8 @@
-from ast import Dict
+from ast import Dict, While
+from base64 import b64encode
 import json
 from os import path
+from time import sleep
 import fiftyone.zoo as foz
 import psutil
 import requests
@@ -24,21 +26,45 @@ def load_dataset():
     return dataset
 
 
-# Function that sends a  dictionary in json format to a url
-def run_send_thread(contents: dict, url: str):
-    contents2 = json.dumps(contents)
+# Function that sends a  dictionary in json format to a url in a time frame
+def run_send_thread(edge_url: str, time_sleep: int, dataset, num_of_images: int):
 
-    print('Sending to', url)
-    try:
-        res = requests.post(
-            url, json=contents2, proxies=proxies)
-        print('response from ', url, ' : ', res.text)
-        # time_rec = res.text['']
-        # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
-        #  % S', time.localtime(1347517370))}')
-    except Exception as e:
-        print('Exception on sending', url)
-        print(e)
+    while True:
+
+        predictions_view = dataset.take(num_of_images)
+
+        # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
+        dicts = {}
+        # This dict is the same as above but without the picture encoded, I print this some tims to debug stuff
+        dict_no_data = {}
+
+        for sample in predictions_view:
+            with open(sample.filepath, "rb") as image:
+                # Add to the smaller the dct the data for thsi sample
+                dict_no_data[sample['id']] = sample.to_dict()
+                # Write the base64 encoded image to the Sample
+                sample['data'] = b64encode(image.read()).decode('utf-8')
+                # Add the sample to the dict to be sent as workload
+                dicts[sample['id']] = sample.to_dict()
+
+        # Print the images names we are sending to ensure we are sending different images each time
+        print_images_names(dict_no_data)
+
+        contents2 = json.dumps(dicts)
+
+        print('Sending to', edge_url)
+        try:
+            res = requests.post(
+                edge_url, json=contents2, proxies=proxies)
+            print('response from ', edge_url, ' : ', res.text)
+            # time_rec = res.text['']
+            # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
+            #  % S', time.localtime(1347517370))}')
+        except Exception as e:
+            print('Exception on sending', edge_url)
+            print(e)
+
+        sleep(time_sleep)
 
 
 def print_images_names(dict_no_data: dict):

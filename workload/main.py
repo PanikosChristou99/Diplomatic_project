@@ -1,13 +1,9 @@
 from asyncio import get_event_loop
 from os import environ
 from time import sleep
-from base64 import b64encode
-import json
-
-from joblib import PrintTime
 from psutil import cpu_percent, Process
 
-from workload_helper import load_dataset, print_images_names, run_send_thread
+from workload_helper import load_dataset, run_send_thread
 
 # By pass proxy eeror on cs dep vm
 environ['no_proxy'] = '*'
@@ -48,42 +44,23 @@ else:
         num_of_sleeps[i] = int(sleep_ar[i])
 
 
-i = 0
-
 print('Starting workloader with :', cpu_percent(), '%')
+
+for i, edge in enumerate(edges):
+
+    edge_url = 'http://' + edge + ':5000/endpoint'
+
+    time_sleep = sleep_ar[i]
+
+    # Send to edge the workload its workload
+    get_event_loop().run_in_executor(
+        None, run_send_thread, edge_url, time_sleep, dataset, num_of_images)  # fire and forget
+
+i = 1
+
 while True:
     i += 1
-
-    print(f'Workloader got in loop for the {i}th time')
-
-    for edge in edges:
-
-        predictions_view = dataset.take(num_of_images)
-
-        # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
-        dicts = {}
-        # This dict is the same as above but without the picture encoded, I print this some tims to debug stuff
-        dict_no_data = {}
-
-        for sample in predictions_view:
-            with open(sample.filepath, "rb") as image:
-                # Add to the smaller the dct the data for thsi sample
-                dict_no_data[sample['id']] = sample.to_dict()
-                # Write the base64 encoded image to the Sample
-                sample['data'] = b64encode(image.read()).decode('utf-8')
-                # Add the sample to the dict to be sent as workload
-                dicts[sample['id']] = sample.to_dict()
-
-        # Print the images names we are sending to ensure we are sending different images each time
-        print_images_names(dict_no_data)
-
-        edge_url = 'http://' + edge + ':5000/endpoint'
-
-        # Send to edge the workload its workload
-        get_event_loop().run_in_executor(
-            None, run_send_thread, dicts, edge_url)  # fire and forget
     perc = cpu_percent()
     print(
-        f'Finished the {i}th workload send with {perc} % and goint to sleep for {sleep_time}')
-
-    sleep(sleep_time)
+        f'Workloader {i}th minute with {perc} %  on my threads and going to sleep again for a minute')
+    sleep(60)
