@@ -25,7 +25,7 @@ services:
       - mongodb
     environment:
       PYTHONUNBUFFERED: 1
-      HTTPS_PROXY: http://proxy.cs.ucy.ac.cy:8008/
+      Monitor_sleep: 60
     dns: <DNS server IP>
 
   # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
@@ -38,6 +38,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'maskrcnn_resnet50_fpn'
+      Monitor_sleep: 60
     depends_on:
       - db_monitor
     dns: <DNS server IP>
@@ -52,6 +53,7 @@ services:
       PYTHONUNBUFFERED: 1
       ML: 'retinanet_resnet50_fpn'
       Name: edge1
+      Monitor_sleep: 60
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -67,6 +69,7 @@ services:
       ML: maskrcnn_resnet50_fpn
       Preprocessing: BW,1,resize,25%,quality,25%
       Name: edge2
+      Monitor_sleep: 60
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -81,6 +84,7 @@ services:
       Edges: edge1,edge2
       Images: 5,2
       Sleep: 40,20
+      Monitor_sleep: 60
     dns: <DNS server IP>
 
 # mongoseed:

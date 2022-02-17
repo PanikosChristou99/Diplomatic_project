@@ -1,7 +1,7 @@
 from asyncio import get_event_loop
 from os import environ
 from time import sleep
-from psutil import cpu_percent, Process
+from psutil import cpu_percent, Process, net_io_counters
 
 from workload_helper import load_dataset, run_send_thread
 
@@ -9,8 +9,9 @@ from workload_helper import load_dataset, run_send_thread
 environ['no_proxy'] = '*'
 
 
-# first cpu call to start counting
+# first cpu call and net work to start counting before startign threads
 Process().cpu_percent()
+bytes_sent_before = net_io_counters().bytes_sent
 
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
@@ -58,9 +59,22 @@ for i, edge in enumerate(edges):
 
 i = 0
 
+
+sleep_time = 60
+
+if "Monitor_sleep" in environ:
+    sleep_time = int(environ['Monitor_sleep'])
+
+
 while True:
     i += 1
     perc = cpu_percent()
+
+    bytes_sent_after = net_io_counters().bytes_sent
+    diff_sent = bytes_sent_after - bytes_sent_before
+    bytes_sent_before = net_io_counters().bytes_sent
+
     print(
-        f'Workloader {i}th minute with {perc} %  on my threads and going to sleep again for a minute')
-    sleep(60)
+        f'Edge after {sleep_time} has {perc} cpu percentage and has sent {diff_sent} bytes')
+
+    sleep(sleep_time)

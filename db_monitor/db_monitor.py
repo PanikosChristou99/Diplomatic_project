@@ -1,6 +1,8 @@
 from time import sleep
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
+from os import environ
+
 client = MongoClient('mongodb://mongodb:27017/')
 
 try:
@@ -10,13 +12,19 @@ except Exception as e:
     print(e)
     exit(0)
 
+sleep_time = 60
+
+if "Monitor_sleep" in environ:
+    sleep_time = int(environ['Monitor_sleep'])
+
 i = 0
 print('Started db_monitor')
 while True:
     i += 1
     print(f'Monitor got in loop for the {i}th time')
-    cursor = client.diplomatic_db.col.find()
-    print('In the Database right now we have :')
-    for record in cursor:
-        print(record)
-    sleep(50)
+
+    res = list(client.diplomatic_db.col.find())
+
+    size = len(res)
+    print(f'In the Database right now we have {size} documents')
+    sleep(sleep_time)

@@ -1,4 +1,5 @@
 from base64 import b64decode
+import imp
 import io
 from os import environ
 import sys
@@ -17,8 +18,8 @@ from torchvision import models
 from torchvision.transforms import functional as func
 from torch import device, cuda
 from bson.json_util import loads
-
-from helper_cloud import load_dataset, predict, print_rep, print_cpu
+from multiprocessing import Process
+from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor
 
 environ['no_proxy'] = '*'
 
@@ -152,6 +153,9 @@ def hello():
         print(e)
         return jsonify(ctime())
 
+
+p = Process(target=network_monitor, args=("Cloud", psutil.Process()))
+p.start()
 
 # if 'Port' not in environ:
 #     print('Did not specify "Port"')

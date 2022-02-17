@@ -201,3 +201,21 @@ class Capturing(list):
 def print_cpu(string: str, p=psutil.Process()):
     perc = p.cpu_percent()
     print(string, perc, '%')
+
+
+def network_monitor(edge_name, proccess: psutil.Process):
+
+    sleep_time = 60
+
+    if "Monitor_sleep" in environ:
+        sleep_time = int(environ['Monitor_sleep'])
+
+    print(f'Starting {edge_name}')
+    while True:
+        bytes_sent_before = proccess.net_io_counters().bytes_sent
+        bytes_recv_before = proccess.net_io_counters().bytes_recv
+        sleep(sleep_time)
+        diff_sent = proccess.net_io_counters().bytes_sent - bytes_sent_before
+        diff_recv = proccess.net_io_counters().bytes_recv - bytes_recv_before
+        print(
+            f'Cloud after {sleep_time} has sent {diff_sent} and recieved {diff_recv} bytes')

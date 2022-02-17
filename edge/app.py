@@ -1,17 +1,19 @@
 from json import loads
+from multiprocessing import Process
 import fiftyone as fo
 from base64 import b64decode, b64encode
 import flask_cors
 import flask
-from time import ctime
+from time import ctime, sleep
 from flask import jsonify
 from PIL import Image
-from psutil import cpu_percent
+from psutil import cpu_percent, net_io_counters
 import psutil
 import torch
 from torchvision import models
 from torch import device, cuda
 import ast
+from edge.helper_edge import network_monitor
 from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud
 import asyncio
 from os import environ
@@ -146,6 +148,9 @@ async def hello():
     except Exception as e:
         print(e)
         return jsonify(ctime())
+
+p = Process(target=network_monitor, args=(edge_name, psutil.Process()))
+p.start()
 
 # if 'Port' not in environ:
 #     print('Did not specify "Port"')
