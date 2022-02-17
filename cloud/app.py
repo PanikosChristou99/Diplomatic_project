@@ -1,5 +1,4 @@
 from base64 import b64decode
-import imp
 import io
 from os import environ
 import sys
@@ -154,7 +153,7 @@ def hello():
         return jsonify(ctime())
 
 
-p = Process(target=network_monitor, args=("Cloud", psutil.Process()))
+p = Process(target=network_monitor, args=("Cloud"))
 p.start()
 
 # if 'Port' not in environ:

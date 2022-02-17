@@ -12,9 +12,7 @@ import psutil
 import torch
 from torchvision import models
 from torch import device, cuda
-import ast
-from edge.helper_edge import network_monitor
-from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud
+from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud, network_monitor
 import asyncio
 from os import environ
 import io

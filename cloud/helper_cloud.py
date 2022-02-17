@@ -203,7 +203,7 @@ def print_cpu(string: str, p=psutil.Process()):
     print(string, perc, '%')
 
 
-def network_monitor(edge_name, proccess: psutil.Process):
+def network_monitor(edge_name):
 
     sleep_time = 60
 
@@ -212,10 +212,10 @@ def network_monitor(edge_name, proccess: psutil.Process):
 
     print(f'Starting {edge_name}')
     while True:
-        bytes_sent_before = proccess.net_io_counters().bytes_sent
-        bytes_recv_before = proccess.net_io_counters().bytes_recv
+        bytes_sent_before = psutil.net_io_counters().bytes_sent
+        bytes_recv_before = psutil.net_io_counters().bytes_recv
         sleep(sleep_time)
-        diff_sent = proccess.net_io_counters().bytes_sent - bytes_sent_before
-        diff_recv = proccess.net_io_counters().bytes_recv - bytes_recv_before
+        diff_sent = psutil.net_io_counters().bytes_sent - bytes_sent_before
+        diff_recv = psutil.net_io_counters().bytes_recv - bytes_recv_before
         print(
             f'Cloud after {sleep_time} has sent {diff_sent} and recieved {diff_recv} bytes')
