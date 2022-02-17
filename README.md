@@ -17,7 +17,7 @@ on linux.
 Then after its built and saved (about 7.14 GB image)
 
 You need to run the docker compose file by running 
-"docker-compose -f "docker-compose.yml" up -d --build"
+"docker-compose -f "docker-compose.yml" up --build"
 
 And you shall have them running and communicating.
 
