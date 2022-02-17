@@ -147,7 +147,7 @@ async def hello():
         print(e)
         return jsonify(ctime())
 
-p = Process(target=network_monitor, args=(edge_name, psutil.Process()))
+p = Process(target=network_monitor, args=(edge_name,))
 p.start()
 
 # if 'Port' not in environ:

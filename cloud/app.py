@@ -153,7 +153,7 @@ def hello():
         return jsonify(ctime())
 
 
-p = Process(target=network_monitor, args=("Cloud"))
+p = Process(target=network_monitor, args=("Cloud",))
 p.start()
 
 # if 'Port' not in environ:
