@@ -1,3 +1,4 @@
+import logging
 from ast import Dict, While
 from base64 import b64encode
 import json
@@ -75,6 +76,22 @@ def print_images_names(dict_no_data: dict):
         print(base_path)
 
 
-def print_cpu(string: str, p=psutil.Process()):
+def print_cpu(string: str, logger, p=psutil.Process(),):
     perc = p.cpu_percent()
     print(string, perc, '%')
+
+
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file, mode='w')
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger

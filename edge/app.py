@@ -1,24 +1,35 @@
+import warnings
 from json import loads
 from multiprocessing import Process
 import fiftyone as fo
-from base64 import b64decode, b64encode
+from base64 import b64decode
 import flask_cors
 import flask
-from time import ctime, sleep
+from time import ctime
 from flask import jsonify
 from PIL import Image
-from psutil import cpu_percent, net_io_counters
 import psutil
 import torch
 from torchvision import models
 from torch import device, cuda
-from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud, network_monitor
+from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud, network_monitor, setup_logger
 import asyncio
 from os import environ
 import io
-import warnings
+import logging
 warnings.filterwarnings("ignore")
 
+edge_name = environ['Name']
+
+log_name = './log/'+edge_name+'.log'
+
+logging.basicConfig(filename=log_name, encoding='utf-8', force=True, mode='w')
+
+temp = edge_name + '_logger'
+log_name_2 = './log/'+temp + '/.log'
+
+edge_logger = setup_logger(temp, log_name_2)
+edge_logger.info('This is just info message')
 environ['no_proxy'] = '*'
 
 # first cpu call to start counting
@@ -49,21 +60,20 @@ if 'ML' in environ:
     model.to(device)
     model.eval()
 
-print_cpu('Starting  with :')
-[]
+print_cpu('Starting  with :', edge_logger)
+
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
 
 if 'Name' not in environ:
     print('You did not specify edge name, please add "Name: EdgeX" at the compose file ')
-edge_name = environ['Name']
 
 
 @app.route('/endpoint', methods=['POST'])
 async def hello():
     try:
-        print_cpu('I got content and the cpu util is :')
+        print_cpu('I got content and the cpu util is :', edge_logger)
 
         content = flask.request.get_json()
 
@@ -99,15 +109,15 @@ async def hello():
 
             if 'Preprocessing' in environ:
                 if ind == 1:
-                    print_cpu('Before preproccesing first image :')
+                    print_cpu('Before preproccesing first image :', edge_logger)
                 image = preprocess_img(sample, image)
                 if ind == 1:
-                    print_cpu('After preproccesing first image :')
+                    print_cpu('After preproccesing first image :', edge_logger)
 
             # if model is assigned so we need to detect
             if model_name:
                 if ind == 1:
-                    print_cpu('Before ML for firt pic:')
+                    print_cpu('Before ML for firt pic:', edge_logger)
 
                 edge_ml_name = edge_name + "_" + environ['ML']
 
@@ -124,7 +134,7 @@ async def hello():
                     detections=detections).to_dict())
 
                 if ind == 1:
-                    print_cpu('After ML for firt pic:')
+                    print_cpu('After ML for firt pic:', edge_logger)
 
         # if model_name:
         #     # uncomment this to pritn report
@@ -147,7 +157,7 @@ async def hello():
         print(e)
         return jsonify(ctime())
 
-p = Process(target=network_monitor, args=(edge_name,))
+p = Process(target=network_monitor, args=(edge_name, edge_logger,))
 p.start()
 
 # if 'Port' not in environ:

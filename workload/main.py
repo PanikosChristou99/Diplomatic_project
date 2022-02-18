@@ -2,8 +2,14 @@ from asyncio import get_event_loop
 from os import environ
 from time import sleep
 from psutil import cpu_percent, Process, net_io_counters
+import logging
+from workload_helper import load_dataset, run_send_thread, setup_logger
 
-from workload_helper import load_dataset, run_send_thread
+logging.basicConfig(filename='./log/workload.log',
+                    encoding='utf-8', force=True,  mode='w')
+
+
+workload_logger = setup_logger('workload_logger', './log/workload_logger.log')
 
 # By pass proxy eeror on cs dep vm
 environ['no_proxy'] = '*'
@@ -74,7 +80,7 @@ while True:
     diff_sent = bytes_sent_after - bytes_sent_before
     bytes_sent_before = net_io_counters().bytes_sent
 
-    print(
+    workload_logger.info(
         f'Edge after {sleep_time} has {perc} cpu percentage and has sent {diff_sent} bytes')
 
     sleep(sleep_time)

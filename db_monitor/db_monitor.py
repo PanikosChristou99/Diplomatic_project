@@ -2,8 +2,12 @@ from time import sleep
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from os import environ
-
+import logging
+logging.basicConfig(filename='./log/dbMonitor.log',
+                    encoding='utf-8', force=True, mode='w')
 client = MongoClient('mongodb://mongodb:27017/')
+
+logging.info("DB MONITOR")
 
 try:
     # The ismaster command is cheap and does not require auth.

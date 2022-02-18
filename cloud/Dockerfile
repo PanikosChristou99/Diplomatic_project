@@ -4,9 +4,9 @@ COPY . /app
 
 WORKDIR /app
 
-RUN pip3 install flask[async]
+# RUN pip3 install flask[async]
 
-RUN pip3 install psutil
+# RUN pip3 install psutil
 
 ARG Port
 

@@ -2,10 +2,10 @@
 # A function that sends to edge the dictionary
 # This function is passed to a thread to be ran and be forgotten about
 
+import logging
 from base64 import b64encode
 from os import environ, getcwd, path, remove
 from time import sleep
-from psutil import cpu_percent
 import psutil
 import requests
 from bson.json_util import dumps
@@ -14,6 +14,7 @@ from PIL import Image
 from torchvision.transforms import functional as func
 import fiftyone as fo
 from fiftyone import ViewField as F
+
 
 proxies = {
     "http": None,
@@ -148,7 +149,7 @@ def predict(image, device, model, classes):
     return detections
 
 
-def print_rep(dataset2, edge_ml_name):
+def print_rep(dataset2, edge_ml_name, logger):
     # Uncomment the below to print the report for this ML
     high_conf_view = dataset2.filter_labels(
         edge_ml_name, F("confidence") > 0.75)
@@ -169,12 +170,12 @@ def print_rep(dataset2, edge_ml_name):
     results.print_report(classes=classes_top10)
 
 
-def print_cpu(string: str, p=psutil.Process()):
+def print_cpu(string: str, logger, p=psutil.Process(), ):
     perc = p.cpu_percent()
     print(string, perc, '%')
 
 
-def network_monitor(edge_name):
+def network_monitor(edge_name, logger):
 
     sleep_time = 60
 
@@ -190,3 +191,19 @@ def network_monitor(edge_name):
         diff_recv = psutil.net_io_counters().bytes_recv - bytes_recv_before
         print(
             f'{edge_name} after {sleep_time} has sent {diff_sent} and recieved {diff_recv} bytes')
+
+
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file, mode='w')
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger

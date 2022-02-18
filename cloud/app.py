@@ -1,24 +1,27 @@
 from base64 import b64decode
 import io
 from os import environ
-import sys
-from io import StringIO
 import flask_cors
 import flask
 from time import ctime
 from flask import jsonify
-import fiftyone.zoo as foz
 import fiftyone as fo
 from PIL import Image
 from psutil import cpu_percent
 import psutil
 import torch
 from torchvision import models
-from torchvision.transforms import functional as func
 from torch import device, cuda
 from bson.json_util import loads
 from multiprocessing import Process
-from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor
+from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger
+import logging
+logging.basicConfig(filename='./log/cloud.log',
+                    encoding='utf-8', force=True, mode='w')
+
+logging.info("CLOUD")
+
+cloud_logger = setup_logger('cloud_logger', './log/cloud_logger.log')
 
 environ['no_proxy'] = '*'
 
@@ -49,7 +52,7 @@ if 'ML' in environ:
     model.eval()
 
 
-print_cpu("Before starting Flask :")
+print_cpu("Before starting Flask :", cloud_logger)
 
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
@@ -59,14 +62,14 @@ flask_cors.CORS(app)
 @app.route('/endpoint', methods=['POST'])
 def hello():
     try:
-        print_cpu("Cloud got content and cpu is :")
+        print_cpu("Cloud got content and cpu is :", cloud_logger)
         content = flask.request.get_json()
 
         # Create the dict of the dicts from the json sent
         content2 = loads(content)
 
         # Create the fiftyone dataset dict
-        samples_dict = loads(content2['samples_dict'])
+        samples_dict = content2['samples_dict']
 
         dataset2 = fo.Dataset()
 
@@ -91,11 +94,11 @@ def hello():
 
             # if model is assigned so we need to detect
             if model_name:
-                print_cpu('Before ML :')
+                print_cpu('Before ML :', cloud_logger)
 
                 res_name = "cloud_"+environ['ML']
                 detections = predict(image, device, model, classes)
-                print_cpu('After ML :')
+                print_cpu('After ML :', cloud_logger)
 
                 # Save predictions to dataset as the name of edge and m
                 sample[res_name] = fo.Detections(
@@ -145,7 +148,7 @@ def hello():
 
         # asyncio.get_event_loop().run_in_executor(
         #     None, send_to_db, content2)  # fire and forget
-            print_cpu('Leavig with CPU :')
+            print_cpu('Leavig with CPU :', cloud_logger)
 
         return jsonify(ctime())
     except Exception as e:
@@ -153,7 +156,7 @@ def hello():
         return jsonify(ctime())
 
 
-p = Process(target=network_monitor, args=("Cloud",))
+p = Process(target=network_monitor, args=("Cloud", cloud_logger,))
 p.start()
 
 # if 'Port' not in environ:

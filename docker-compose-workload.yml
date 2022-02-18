@@ -9,7 +9,12 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
+      Images: 5,2
+      Sleep: 40,20
+      Monitor_sleep: 60
     dns: <DNS server IP>
+    volumes:
+      - ./volume:/app/log
 
 # mongoseed:
 #   image: mongo

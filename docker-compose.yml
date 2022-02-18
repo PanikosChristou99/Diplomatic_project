@@ -27,6 +27,8 @@ services:
       PYTHONUNBUFFERED: 1
       Monitor_sleep: 60
     dns: <DNS server IP>
+    volumes:
+      - ./volume:/app/log
 
   # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
   cloud:
@@ -42,6 +44,8 @@ services:
     depends_on:
       - db_monitor
     dns: <DNS server IP>
+    volumes:
+      - ./volume:/app/log
 
   edge1:
     container_name: edge1
@@ -57,6 +61,8 @@ services:
     depends_on:
       - cloud
     dns: <DNS server IP>
+    volumes:
+      - ./volume:/app/log
 
   edge2:
     container_name: edge2
@@ -73,6 +79,8 @@ services:
     depends_on:
       - cloud
     dns: <DNS server IP>
+    volumes:
+      - ./volume:/app/log
 
   workload:
     container_name: workload
@@ -86,6 +94,8 @@ services:
       Sleep: 40,20
       Monitor_sleep: 60
     dns: <DNS server IP>
+    volumes:
+      - ./volume:/app/log
 
 # mongoseed:
 #   image: mongo
