@@ -4,7 +4,7 @@ from pymongo.errors import ConnectionFailure
 from os import environ
 import logging
 logging.basicConfig(filename='./log/dbMonitor.log',
-                    encoding='utf-8', force=True, mode='w')
+                    encoding='utf-8', force=True, filemode='w')
 client = MongoClient('mongodb://mongodb:27017/')
 
 logging.info("DB MONITOR")
