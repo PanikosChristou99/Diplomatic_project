@@ -21,7 +21,7 @@ warnings.filterwarnings("ignore")
 
 edge_name = environ['Name']
 
-log_name = './log/'+edge_name+'.log'
+log_name = './log/'+edge_name[:-1]+'.log'
 
 logging.basicConfig(filename=log_name, encoding='utf-8',
                     force=True, filemode='w')

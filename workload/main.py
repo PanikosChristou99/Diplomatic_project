@@ -6,7 +6,7 @@ import logging
 from workload_helper import load_dataset, run_send_thread, setup_logger
 
 logging.basicConfig(filename='./log/workload.log',
-                    encoding='utf-8', force=True,  mode='w')
+                    encoding='utf-8', force=True,  filemode='w')
 
 
 workload_logger = setup_logger('workload_logger', './log/workload_logger.log')
