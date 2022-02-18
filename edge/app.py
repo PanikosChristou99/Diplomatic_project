@@ -23,7 +23,8 @@ edge_name = environ['Name']
 
 log_name = './log/'+edge_name+'.log'
 
-logging.basicConfig(filename=log_name, encoding='utf-8', force=True, mode='w')
+logging.basicConfig(filename=log_name, encoding='utf-8',
+                    force=True, filemode='w')
 
 temp = edge_name + '_logger'
 log_name_2 = './log/'+temp + '/.log'

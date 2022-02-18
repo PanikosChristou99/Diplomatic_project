@@ -17,7 +17,7 @@ from multiprocessing import Process
 from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger
 import logging
 logging.basicConfig(filename='./log/cloud.log',
-                    encoding='utf-8', force=True, mode='w')
+                    encoding='utf-8', force=True, filemode='w')
 
 logging.info("CLOUD")
 
