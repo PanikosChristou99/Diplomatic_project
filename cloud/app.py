@@ -112,11 +112,12 @@ def hello():
                     detections=detections).to_dict())
 
                 # uncomment this to pritn report
-                print_rep(dataset2, res_name)
+                print_rep(dataset2, res_name, logger=cloud_logger)
 
         # the edge ran an ML so lets find its results
         if 'results_ML_name' in content2:
-            print_rep(dataset2, content2['results_ML_name'])
+            print_rep(
+                dataset2, content2['results_ML_name'], logger=cloud_logger)
 
         # with Capturing() as output:
         #     # Print a classification report for the top-10 classes

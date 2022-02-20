@@ -76,9 +76,9 @@ def print_images_names(dict_no_data: dict):
         print(base_path)
 
 
-def print_cpu(string: str, logger, p=psutil.Process(),):
+def print_cpu(string: str, logger: logging.Logger, p=psutil.Process(),):
     perc = p.cpu_percent()
-    print(string, perc, '%')
+    logger.info(string, perc, '%')
 
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')

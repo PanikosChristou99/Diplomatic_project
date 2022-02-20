@@ -5,6 +5,7 @@
 import logging
 from base64 import b64encode
 from os import environ, getcwd, path, remove
+import sys
 from time import sleep
 import psutil
 import requests
@@ -14,7 +15,7 @@ from PIL import Image
 from torchvision.transforms import functional as func
 import fiftyone as fo
 from fiftyone import ViewField as F
-
+from io import StringIO
 
 proxies = {
     "http": None,
@@ -149,15 +150,28 @@ def predict(image, device, model, classes):
     return detections
 
 
-def print_rep(dataset2, edge_ml_name, logger):
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio    # free up some memory
+        sys.stdout = self._stdout
+
+
+def print_rep(dataset2, edge_ml_name: str, logger: logging.Logger):
     # Uncomment the below to print the report for this ML
     high_conf_view = dataset2.filter_labels(
         edge_ml_name, F("confidence") > 0.75)
 
+    eval_key = "eval" + edge_ml_name
     results = high_conf_view.evaluate_detections(
         edge_ml_name,
         gt_field="ground_truth",
-        eval_key="eval",
+        eval_key=eval_key,
         compute_mAP=True,
     )
 
@@ -166,16 +180,23 @@ def print_rep(dataset2, edge_ml_name, logger):
     classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
 
     # Print a classification report for the top-10 classes
-    print('Results for ', edge_ml_name, " are:")
-    results.print_report(classes=classes_top10)
+    logger.info('Results for ', edge_ml_name, " are:")
+
+    output = []
+
+    with Capturing() as output:
+        results.print_report(classes=classes_top10)
+
+    for line in output:
+        logger.info(str(line))
 
 
-def print_cpu(string: str, logger, p=psutil.Process(), ):
+def print_cpu(string: str, logger: logging.Logger, p=psutil.Process(), ):
     perc = p.cpu_percent()
-    print(string, perc, '%')
+    logger.info(string, perc, '%')
 
 
-def network_monitor(edge_name, logger):
+def network_monitor(edge_name, logger: logging.Logger):
 
     sleep_time = 60
 
@@ -189,7 +210,7 @@ def network_monitor(edge_name, logger):
         sleep(sleep_time)
         diff_sent = psutil.net_io_counters().bytes_sent - bytes_sent_before
         diff_recv = psutil.net_io_counters().bytes_recv - bytes_recv_before
-        print(
+        logger.info(
             f'{edge_name} after {sleep_time} has sent {diff_sent} and recieved {diff_recv} bytes')
 
 

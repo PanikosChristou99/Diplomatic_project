@@ -9,6 +9,25 @@ client = MongoClient('mongodb://mongodb:27017/')
 
 logging.info("DB MONITOR")
 
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file, mode='w')
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+
+dbMonitor_logger = setup_logger(
+    'dbMonitor_logger', './log/dbMonitor_logger.log')
+
 try:
     # The ismaster command is cheap and does not require auth.
     client.admin.command('ismaster')

@@ -21,13 +21,13 @@ warnings.filterwarnings("ignore")
 
 edge_name = environ['Name']
 
-log_name = './log/'+edge_name[:-1]+'.log'
+log_name = './log/'+edge_name+'.log'
 
 logging.basicConfig(filename=log_name, encoding='utf-8',
                     force=True, filemode='w')
 
 temp = edge_name + '_logger'
-log_name_2 = './log/'+temp + '/.log'
+log_name_2 = './log/'+temp + '.log'
 
 edge_logger = setup_logger(temp, log_name_2)
 edge_logger.info('This is just info message')
@@ -139,7 +139,7 @@ async def hello():
 
         # if model_name:
         #     # uncomment this to pritn report
-        #     print_rep(dataset2, edge_ml_name)
+        #     print_rep(dataset2, edge_ml_name , logger=edge_logger)
 
         to_send = {'edge_name': edge_name, 'samples_dict': sample_dict}
 
@@ -165,5 +165,5 @@ p.start()
 #     print('Did not specify "Port"')
 #     exit(1)
 
-# port = int(environ['Port'])
+# port = int(environ['Pcatort'])
 app.run(host='0.0.0.0', port=5000)
