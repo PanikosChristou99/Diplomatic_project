@@ -113,7 +113,7 @@ def preprocess_img(sample, image,  logger: logging.Logger):
 
     percent_smaller = (new_size/prev_size) * 100
 
-    string = "There new image is " + percent_smaller + \
+    string = "There new image is " + str(percent_smaller) + \
         "% smaller than the previous one"
     logger.info(string)
 
