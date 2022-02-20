@@ -180,7 +180,8 @@ def print_rep(dataset2, edge_ml_name: str, logger: logging.Logger):
     classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
 
     # Print a classification report for the top-10 classes
-    logger.info('Results for ', edge_ml_name, " are:")
+    string = 'Results for ' + edge_ml_name + " are:"
+    logger.info(string)
 
     output = []
 
@@ -193,7 +194,8 @@ def print_rep(dataset2, edge_ml_name: str, logger: logging.Logger):
 
 def print_cpu(string: str, logger: logging.Logger, p=psutil.Process(), ):
     perc = p.cpu_percent()
-    logger.info(string, perc, '%')
+    string2 = string + perc + '%'
+    logger.info(string2)
 
 
 def network_monitor(edge_name, logger: logging.Logger):
