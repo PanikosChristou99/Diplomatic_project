@@ -14,7 +14,7 @@ from torchvision import models
 from torch import device, cuda
 from bson.json_util import loads
 from multiprocessing import Process
-from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger
+from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger, Capturing, send_to_mongo
 import logging
 logging.basicConfig(filename='./log/cloud.log',
                     encoding='utf-8', force=True, filemode='w')
@@ -112,44 +112,36 @@ def hello():
                     detections=detections).to_dict())
 
                 # uncomment this to pritn report
-                print_rep(dataset2, res_name, logger=cloud_logger)
+
+        output = []
+
+        if model_name:
+            output.extend(print_rep(dataset2, res_name, logger=cloud_logger))
 
         # the edge ran an ML so lets find its results
         if 'results_ML_name' in content2:
-            print_rep(
-                dataset2, content2['results_ML_name'], logger=cloud_logger)
+            output.extend(print_rep(
+                dataset2, content2['results_ML_name'], logger=cloud_logger))
 
-        # with Capturing() as output:
-        #     # Print a classification report for the top-10 classes
-        #     results2.print_report(classes=classes_top10)
-        #     # Print a classification report for the top-10 classes
-        #     results1.print_report(classes=classes_top10)
+        if len(output) != 0:
+            string = "\n".join(line for line in output)
+            models = ""
+            if model_name:
+                models += model_name
 
-        # half_of_output = int(len(output)/2)
+            # the edge ran an ML so lets find its results
+            if 'results_ML_name' in content2:
+                models += content2['results_ML_name']
 
-        # out1 = "/n".join(line for line in output[:half_of_output])
-        # out2 = "/n".join(line for line in output[half_of_output:])
+            dict1 = {
+                'time': ctime(),
+                'output': 'string',
+                'models':  models
+            }
 
-        # dict1 = {
-        #     'report': out1,
-        #     'time': ctime(),
-        #     'model': 'retinanet_resnet'
-        # }
+            send_to_mongo(dict1)
 
-        # dict2 = {
-        #     'report': out2,
-        #     'time': ctime(),
-        #     'model': 'faster_rcnn'
-        # }
-        # send_to_mongo(dict1)
-        # send_to_mongo(dict2)
-
-        # results.
-        # to_send = {}
-
-        # asyncio.get_event_loop().run_in_executor(
-        #     None, send_to_db, content2)  # fire and forget
-            print_cpu('Leavig with CPU :', cloud_logger)
+            print_cpu('Leaving with CPU :', cloud_logger)
 
         return jsonify(ctime())
     except Exception as e:

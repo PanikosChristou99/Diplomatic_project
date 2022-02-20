@@ -164,7 +164,7 @@ class Capturing(list):
         sys.stdout = self._stdout
 
 
-def print_rep(dataset2, edge_ml_name, logger: logging.Logger):
+def print_rep(dataset2, edge_ml_name, logger: logging.Logger) -> list:
     # Uncomment the below to print the report for this ML
     high_conf_view = dataset2.filter_labels(
         edge_ml_name, F("confidence") > 0.75)
@@ -192,6 +192,8 @@ def print_rep(dataset2, edge_ml_name, logger: logging.Logger):
 
     for line in output:
         logger.info(str(line))
+
+    return output
 
 
 # Set up mongo connection
