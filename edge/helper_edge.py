@@ -194,7 +194,7 @@ def print_rep(dataset2, edge_ml_name: str, logger: logging.Logger):
 
 def print_cpu(string: str, logger: logging.Logger, p=psutil.Process(), ):
     perc = p.cpu_percent()
-    string2 = string + perc + '%'
+    string2 = string + str(perc) + '%'
     logger.info(string2)
 
 

@@ -221,7 +221,7 @@ class Capturing(list):
 
 def print_cpu(string: str, logger: logging.Logger, p=psutil.Process()):
     perc = p.cpu_percent()
-    string2 = string + perc + '%'
+    string2 = string + str(perc) + '%'
     logger.info(string2)
 
 
