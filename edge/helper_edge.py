@@ -49,15 +49,17 @@ def send_to_cloud(contents: dict):
         print(e)
 
 
-def preprocess_img(sample, image):
+def preprocess_img(sample, image,  logger: logging.Logger):
     curr_path = path.abspath(getcwd())
     pic_name = path.basename(sample.filepath)
     # save a apth to modify the image on
     new_path = path.join(curr_path, pic_name)
 
-    # image.save(new_path, quality=100, optimize=True)
-    # print("Original image size = ", path.getsize(new_path) / (1024*1024))
-    # remove(new_path)
+    image.save(new_path, quality=100, optimize=True)
+    prev_size = path.getsize(new_path) / (1024*1024)
+    # string = "Original image size = " + str(prev_size) + 'MBytes'
+    # logger.info(string)
+    remove(new_path)
 
     preferences_str = environ['Preprocessing']
     # print(preferences_str)
@@ -105,7 +107,15 @@ def preprocess_img(sample, image):
             image.draft("L", image.size)
 
     image.save(new_path, quality=quality, optimize=True)
-    # print("New image size = ", path.getsize(new_path) / (1024*1024))
+    new_size = path.getsize(new_path) / (1024*1024)
+    # string = "New image size = " + str(new_size) + 'MBytes'
+    # logger.info(string)
+
+    percent_smaller = (new_size/prev_size) * 100
+
+    string = "There new image is " + percent_smaller + \
+        "% smaller than the previous one"
+    logger.info(string)
 
     with open(new_path, "rb") as image:
 
@@ -210,10 +220,12 @@ def network_monitor(edge_name, logger: logging.Logger):
         bytes_sent_before = psutil.net_io_counters().bytes_sent
         bytes_recv_before = psutil.net_io_counters().bytes_recv
         sleep(sleep_time)
-        diff_sent = psutil.net_io_counters().bytes_sent - bytes_sent_before
-        diff_recv = psutil.net_io_counters().bytes_recv - bytes_recv_before
+        diff_sent = (psutil.net_io_counters().bytes_sent -
+                     bytes_sent_before) / 1000
+        diff_recv = (psutil.net_io_counters().bytes_recv -
+                     bytes_recv_before) / 1000
         logger.info(
-            f'{edge_name} after {sleep_time} has sent {diff_sent} and recieved {diff_recv} bytes')
+            f'{edge_name} after {sleep_time} has sent {diff_sent} and recieved {diff_recv} KBytes')
 
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')

@@ -77,10 +77,10 @@ while True:
     perc = cpu_percent()
 
     bytes_sent_after = net_io_counters().bytes_sent
-    diff_sent = bytes_sent_after - bytes_sent_before
+    diff_sent = (bytes_sent_after - bytes_sent_before) / 1000
     bytes_sent_before = net_io_counters().bytes_sent
 
     workload_logger.info(
-        f'Edge after {sleep_time} has {perc} cpu percentage and has sent {diff_sent} bytes')
+        f'Edge after {sleep_time} has {perc} cpu percentage and has sent {diff_sent} KBytes')
 
     sleep(sleep_time)

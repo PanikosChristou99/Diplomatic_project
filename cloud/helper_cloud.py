@@ -237,10 +237,12 @@ def network_monitor(edge_name: str, logger: logging.Logger):
         bytes_sent_before = psutil.net_io_counters().bytes_sent
         bytes_recv_before = psutil.net_io_counters().bytes_recv
         sleep(sleep_time)
-        diff_sent = psutil.net_io_counters().bytes_sent - bytes_sent_before
-        diff_recv = psutil.net_io_counters().bytes_recv - bytes_recv_before
+        diff_sent = (psutil.net_io_counters().bytes_sent -
+                     bytes_sent_before) / 1000
+        diff_recv = (psutil.net_io_counters().bytes_recv -
+                     bytes_recv_before) / 1000
         logger.info(
-            f'Cloud after {sleep_time} has sent {diff_sent} and recieved {diff_recv} bytes')
+            f'Cloud after {sleep_time} has sent {diff_sent} and recieved {diff_recv} KBytes')
 
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')

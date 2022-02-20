@@ -39,7 +39,7 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'maskrcnn_resnet50_fpn'
+      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
       Monitor_sleep: 60
     depends_on:
       - db_monitor

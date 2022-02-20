@@ -111,7 +111,7 @@ async def hello():
             if 'Preprocessing' in environ:
                 if ind == 1:
                     print_cpu('Before preproccesing first image :', edge_logger)
-                image = preprocess_img(sample, image)
+                image = preprocess_img(sample, image, logger=edge_logger)
                 if ind == 1:
                     print_cpu('After preproccesing first image :', edge_logger)
 
@@ -151,7 +151,7 @@ async def hello():
             None, send_to_cloud, to_send)  # fire and forget
 
         dataset2.delete()
-        print_cpu('Done with cpu at :')
+        print_cpu('Done with cpu at :', edge_logger)
 
         return jsonify(ctime())
     except Exception as e:
