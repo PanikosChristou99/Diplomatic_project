@@ -202,11 +202,12 @@ db = conn.diplomatic_db
 collection = db.col
 
 
-def send_to_mongo(contents: dict):
+def send_to_mongo(contents: dict, logger: logging.Logger):
 
     # Insert Data
     rec_id1 = collection.insert_one(contents)
-    print('inserted record :', rec_id1)
+    string = 'inserted record :', rec_id1
+    logger.info(string)
 
 
 class Capturing(list):

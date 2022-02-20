@@ -26,6 +26,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Monitor_sleep: 60
+      Sleeps_to_print: 3
     dns: <DNS server IP>
     volumes:
       - ./volume:/app/log
@@ -90,7 +91,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
-      Images: 5,2
+      Images: 20,10
       Sleep: 40,20
       Monitor_sleep: 60
     dns: <DNS server IP>

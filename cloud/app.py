@@ -83,7 +83,11 @@ def hello():
         results_dict = {}
         sample_dict = {}
 
+        ind = 0
+
         for sample in dataset2:
+
+            ind += 1
 
             # Load image
 
@@ -94,11 +98,13 @@ def hello():
 
             # if model is assigned so we need to detect
             if model_name:
-                print_cpu('Before ML :', cloud_logger)
+                if ind == 1:
+                    print_cpu('Before ML for first:', cloud_logger)
 
                 res_name = "cloud_"+environ['ML']
                 detections = predict(image, device, model, classes)
-                print_cpu('After ML :', cloud_logger)
+                if ind == 1:
+                    print_cpu('After ML for first:', cloud_logger)
 
                 # Save predictions to dataset as the name of edge and m
                 sample[res_name] = fo.Detections(
@@ -139,7 +145,7 @@ def hello():
                 'models':  models
             }
 
-            send_to_mongo(dict1)
+            send_to_mongo(dict1, cloud_logger)
 
             print_cpu('Leaving with CPU :', cloud_logger)
 
