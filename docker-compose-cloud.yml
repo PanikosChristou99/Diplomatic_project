@@ -1,0 +1,34 @@
+version: "3"
+#make sure preferences no comma last
+services:
+
+  edge1:
+    container_name: edge1
+    build: ./edge
+    #TODO figure out if I need this since I don't use it
+    ports:
+      - "5001:5001"
+    environment:
+      PYTHONUNBUFFERED: 1
+      ML: 'retinanet_resnet50_fpn'
+      Preprocessing: BW,1,resize,75%,quality,75%
+      Name: edge1
+      Monitor_sleep: 60
+    dns: <DNS server IP>
+    volumes:
+      - ./volume/edges/log:/app/log
+      - ./volume/edges/stats:/app/stats
+
+  workload:
+    container_name: workload
+    build: ./workload
+    environment:
+      PYTHONUNBUFFERED: 1
+      Edges: edge1
+      Images: 2
+      Sleep: 5
+      Monitor_sleep: 4
+    dns: <DNS server IP>
+    volumes:
+      - ./volume/workload/log:/app/log
+      - ./volume/workload/stats:/app/stats

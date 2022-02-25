@@ -1,13 +1,14 @@
 from base64 import b64decode
 import io
-from os import environ
+from os import environ, getpid
+import warnings
 import flask_cors
 import flask
 from time import ctime
 from flask import jsonify
 import fiftyone as fo
 from PIL import Image
-from psutil import cpu_percent
+from pandas import DataFrame, read_csv
 import psutil
 import torch
 from torchvision import models
@@ -16,17 +17,26 @@ from bson.json_util import loads
 from multiprocessing import Process
 from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger, Capturing, send_to_mongo
 import logging
-logging.basicConfig(filename='./log/cloud.log',
+from datetime import datetime
+
+warnings.filterwarnings("ignore")
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+d = datetime.today()
+
+log_name = './log/' + d.strftime('%d_%m_%H_%M') + \
+    '_cloud_logger' + '.log'
+
+
+logging.basicConfig(filename=log_name,
                     encoding='utf-8', force=True, filemode='w')
-
-logging.info("CLOUD")
-
-cloud_logger = setup_logger('cloud_logger', './log/cloud_logger.log')
 
 environ['no_proxy'] = '*'
 
 # first cpu call to start counting
-psutil.Process().cpu_percent()
+p = psutil.Process(getpid())
+p.cpu_percent()
+
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
 dataset = load_dataset()
@@ -42,27 +52,51 @@ torch.set_num_threads(3)
 model = None
 model_name = ""
 
+cloud_csv_name_requests = './stats/' + \
+    d.strftime('%d_%m_%H_%M') + '_cloud_requests_'
+cloud_csv_name_monitor = './stats/' + \
+    d.strftime('%d_%m_%H_%M') + '_cloud_monitor_'
+cloud_reports_name = './stats/' + d.strftime('%d_%m_%H_%M') + \
+    '_cloud_report_'
+
+collumns = ['Start_CPU', 'End_CPU']
+
+
 # if we have a custom ML then use that
 if 'ML' in environ:
     model_name = environ['ML']
+    cloud_csv_name_requests += model_name
+    cloud_csv_name_monitor += model_name
+    cloud_reports_name += model_name + '_'
+
+    collumns.append('Start_ML')
+    collumns.append('End_ML')
+
     method = getattr(models.detection, model_name)
     model = method(pretrained=True)
     print('Using ', model_name)
     model.to(device)
     model.eval()
 
-
-print_cpu("Before starting Flask :", cloud_logger)
-
 app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
 
 
+cloud_csv_name_requests += '.csv'
+cloud_reports_name += '.txt'
+
+df = DataFrame(columns=collumns)
+
+df.to_csv(cloud_csv_name_requests)
+
+
 @app.route('/endpoint', methods=['POST'])
 def hello():
     try:
-        print_cpu("Cloud got content and cpu is :", cloud_logger)
+        print('I got content')
+        start_cpu = p.cpu_percent()
+
         content = flask.request.get_json()
 
         # Create the dict of the dicts from the json sent
@@ -96,15 +130,18 @@ def hello():
             image_data = b64decode(sample.data)
             image = Image.open(io.BytesIO(image_data))
 
+            start_ml = float(-1)
+            end_ml = float(-1)
+
             # if model is assigned so we need to detect
             if model_name:
                 if ind == 1:
-                    print_cpu('Before ML for first:', cloud_logger)
+                    start_ml = p.cpu_percent()
 
                 res_name = "cloud_"+environ['ML']
                 detections = predict(image, device, model, classes)
                 if ind == 1:
-                    print_cpu('After ML for first:', cloud_logger)
+                    end_ml = p.cpu_percent()
 
                 # Save predictions to dataset as the name of edge and m
                 sample[res_name] = fo.Detections(
@@ -122,15 +159,18 @@ def hello():
         output = []
 
         if model_name:
-            output.extend(print_rep(dataset2, res_name, logger=cloud_logger))
+            output.extend(print_rep(dataset2, res_name))
 
         # the edge ran an ML so lets find its results
         if 'results_ML_name' in content2:
             output.extend(print_rep(
-                dataset2, content2['results_ML_name'], logger=cloud_logger))
+                dataset2, content2['results_ML_name']))
 
         if len(output) != 0:
             string = "\n".join(line for line in output)
+            with open(cloud_reports_name, "a+") as f:
+                f.write(string)
+
             models = ""
             if model_name:
                 models += model_name
@@ -141,13 +181,22 @@ def hello():
 
             dict1 = {
                 'time': ctime(),
-                'output': 'string',
+                'output': string,
                 'models':  models
             }
 
-            send_to_mongo(dict1, cloud_logger)
+            send_to_mongo(dict1)
 
-            print_cpu('Leaving with CPU :', cloud_logger)
+        dataset2.delete()
+        end_cpu = p.cpu_percent()
+        data = {'Start_CPU': start_cpu, 'End_CPU': end_cpu,
+                'Start_ML': start_ml, 'End_ML': end_ml
+                }
+
+        df2 = read_csv(cloud_csv_name_requests, index_col=0)
+        df2 = df2.append(
+            data, ignore_index=True)
+        df2.to_csv(cloud_csv_name_requests, mode='w')
 
         return jsonify(ctime())
     except Exception as e:
@@ -155,7 +204,7 @@ def hello():
         return jsonify(ctime())
 
 
-p = Process(target=network_monitor, args=("Cloud", cloud_logger,))
+p = Process(target=network_monitor, args=("Cloud", p, cloud_csv_name_monitor))
 p.start()
 
 # if 'Port' not in environ:

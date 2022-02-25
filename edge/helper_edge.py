@@ -2,20 +2,22 @@
 # A function that sends to edge the dictionary
 # This function is passed to a thread to be ran and be forgotten about
 
-import logging
 from base64 import b64encode
+from logging import INFO, FileHandler, Formatter, Logger, getLogger
+from multiprocessing import Process
 from os import environ, getcwd, path, remove
-import sys
+from sys import stdout
 from time import sleep
-import psutil
-import requests
 from bson.json_util import dumps
 import fiftyone.zoo as foz
 from PIL import Image
+from pandas import DataFrame
+import psutil
 from torchvision.transforms import functional as func
 import fiftyone as fo
 from fiftyone import ViewField as F
 from io import StringIO
+import requests
 
 proxies = {
     "http": None,
@@ -49,7 +51,7 @@ def send_to_cloud(contents: dict):
         print(e)
 
 
-def preprocess_img(sample, image,  logger: logging.Logger):
+def preprocess_img(sample, image):
     curr_path = path.abspath(getcwd())
     pic_name = path.basename(sample.filepath)
     # save a apth to modify the image on
@@ -113,10 +115,6 @@ def preprocess_img(sample, image,  logger: logging.Logger):
 
     percent_smaller = (new_size/prev_size) * 100
 
-    string = "There new image is " + str(percent_smaller) + \
-        "% smaller than the previous one"
-    logger.info(string)
-
     with open(new_path, "rb") as image:
 
         # Write the NEW base64 encoded image to the Sample
@@ -127,7 +125,7 @@ def preprocess_img(sample, image,  logger: logging.Logger):
     image = Image.open(new_path)
     # remove ot not fill space
     remove(new_path)
-    return image
+    return image, percent_smaller
 
 
 def predict(image, device, model, classes):
@@ -162,17 +160,17 @@ def predict(image, device, model, classes):
 
 class Capturing(list):
     def __enter__(self):
-        self._stdout = sys.stdout
-        sys.stdout = self._stringio = StringIO()
+        self._stdout = stdout
+        stdout = self._stringio = StringIO()
         return self
 
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio    # free up some memory
-        sys.stdout = self._stdout
+        stdout = self._stdout
 
 
-def print_rep(dataset2, edge_ml_name: str, logger: logging.Logger):
+def print_rep(dataset2, edge_ml_name: str, logger: Logger):
     # Uncomment the below to print the report for this ML
     high_conf_view = dataset2.filter_labels(
         edge_ml_name, F("confidence") > 0.75)
@@ -202,20 +200,28 @@ def print_rep(dataset2, edge_ml_name: str, logger: logging.Logger):
         logger.info(str(line))
 
 
-def print_cpu(string: str, logger: logging.Logger, p=psutil.Process(), ):
+def print_cpu(string: str, logger: Logger, p=psutil.Process(), ):
     perc = p.cpu_percent()
     string2 = string + str(perc) + '%'
     logger.info(string2)
 
 
-def network_monitor(edge_name, logger: logging.Logger):
+def network_monitor(edge_name, p: psutil.Process(), edge_csv_name_monitor):
 
     sleep_time = 60
 
     if "Monitor_sleep" in environ:
         sleep_time = int(environ['Monitor_sleep'])
 
-    print(f'Starting {edge_name}')
+    print(f'Starting {edge_csv_name_monitor} monitor')
+
+    data = {'CPU_Perc': [p.cpu_percent()], 'KBytes_sent': [
+        0], 'KBytes_recieved': [0]}
+
+    df = DataFrame(data)
+
+    df.to_csv(edge_csv_name_monitor)
+
     while True:
         bytes_sent_before = psutil.net_io_counters().bytes_sent
         bytes_recv_before = psutil.net_io_counters().bytes_recv
@@ -224,20 +230,24 @@ def network_monitor(edge_name, logger: logging.Logger):
                      bytes_sent_before) / 1000
         diff_recv = (psutil.net_io_counters().bytes_recv -
                      bytes_recv_before) / 1000
-        logger.info(
-            f'{edge_name} after {sleep_time} has sent {diff_sent} and recieved {diff_recv} KBytes')
+
+        data2 = {'CPU_Perc': p.cpu_percent(), 'KBytes_sent': diff_sent,
+                 "KBytes_recieved": diff_recv}
+
+        df = df.append(data2, ignore_index=True)
+        df.to_csv(edge_csv_name_monitor)
 
 
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
 
 
-def setup_logger(name, log_file, level=logging.INFO):
+def setup_logger(name, log_file, level=INFO):
     """To setup as many loggers as you want"""
 
-    handler = logging.FileHandler(log_file, mode='w')
+    handler = FileHandler(log_file, mode='w')
     handler.setFormatter(formatter)
 
-    logger = logging.getLogger(name)
+    logger = getLogger(name)
     logger.setLevel(level)
     logger.addHandler(handler)
 

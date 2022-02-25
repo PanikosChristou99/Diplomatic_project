@@ -5,3 +5,8 @@ fiftyone
 Flask
 Flask_Cors
 psutil
+pyJoules
+pymongo
+flask[async]
+pandas
+numpy

@@ -5,23 +5,13 @@ services:
   workload:
     container_name: workload
     build: ./workload
-    # depends_on:- cloud
     environment:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
-      Images: 5,2
-      Sleep: 40,20
-      Monitor_sleep: 60
+      Images: 1,2
+      Sleep: 4,8
+      Monitor_sleep: 3
     dns: <DNS server IP>
     volumes:
-      - ./volume:/app/log
-
-# mongoseed:
-#   image: mongo
-#   container_name: mongoseed
-#   volumes:
-#     - ./mongoDB/init:/init
-#   command: mongoimport --host mongodb --db diplomatic_db --collection col
-#     --jsonArray --file /init/init.json && python3 /init/db_monitor.py
-#   depends_on:
-#     - mongodb
+      - ./volume/workload/log:/app/log
+      - ./volume/workload/stats:/app/stats

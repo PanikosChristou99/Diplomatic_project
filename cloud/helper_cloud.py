@@ -5,6 +5,7 @@
 import logging
 from fiftyone import ViewField as F
 import fiftyone as fo
+from pandas import DataFrame
 from torchvision.transforms import functional as func
 from PIL import Image
 import fiftyone.zoo as foz
@@ -164,7 +165,7 @@ class Capturing(list):
         sys.stdout = self._stdout
 
 
-def print_rep(dataset2, edge_ml_name, logger: logging.Logger) -> list:
+def print_rep(dataset2, edge_ml_name) -> list:
     # Uncomment the below to print the report for this ML
     high_conf_view = dataset2.filter_labels(
         edge_ml_name, F("confidence") > 0.75)
@@ -183,7 +184,7 @@ def print_rep(dataset2, edge_ml_name, logger: logging.Logger) -> list:
 
     # Print a classification report for the top-10 classes
     string = 'Results for '+edge_ml_name + " are:"
-    logger.info(string)
+    logging.info(string)
 
     output = []
 
@@ -191,7 +192,7 @@ def print_rep(dataset2, edge_ml_name, logger: logging.Logger) -> list:
         results.print_report(classes=classes_top10)
 
     for line in output:
-        logger.info(str(line))
+        logging.info(str(line))
 
     return output
 
@@ -202,12 +203,12 @@ db = conn.diplomatic_db
 collection = db.col
 
 
-def send_to_mongo(contents: dict, logger: logging.Logger):
+def send_to_mongo(contents: dict):
 
     # Insert Data
     rec_id1 = collection.insert_one(contents)
     string = 'inserted record :', rec_id1
-    logger.info(string)
+    logging.info(string)
 
 
 class Capturing(list):
@@ -228,14 +229,22 @@ def print_cpu(string: str, logger: logging.Logger, p=psutil.Process()):
     logger.info(string2)
 
 
-def network_monitor(edge_name: str, logger: logging.Logger):
+def network_monitor(edge_name: str, p: psutil.Process(), edge_csv_name_monitor):
 
     sleep_time = 60
 
     if "Monitor_sleep" in environ:
         sleep_time = int(environ['Monitor_sleep'])
 
-    logger.info(f'Starting {edge_name}')
+    print(f'Starting {edge_csv_name_monitor} monitor')
+
+    data = {'CPU_Perc': [p.cpu_percent()], 'KBytes_sent': [
+        0], 'KBytes_recieved': [0]}
+
+    df = DataFrame(data)
+
+    df.to_csv(edge_csv_name_monitor)
+
     while True:
         bytes_sent_before = psutil.net_io_counters().bytes_sent
         bytes_recv_before = psutil.net_io_counters().bytes_recv
@@ -244,8 +253,11 @@ def network_monitor(edge_name: str, logger: logging.Logger):
                      bytes_sent_before) / 1000
         diff_recv = (psutil.net_io_counters().bytes_recv -
                      bytes_recv_before) / 1000
-        logger.info(
-            f'Cloud after {sleep_time} has sent {diff_sent} and recieved {diff_recv} KBytes')
+        data2 = {'CPU_Perc': p.cpu_percent(), 'KBytes_sent': diff_sent,
+                 "KBytes_recieved": diff_recv}
+
+        df = df.append(data2, ignore_index=True)
+        df.to_csv(edge_csv_name_monitor)
 
 
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')

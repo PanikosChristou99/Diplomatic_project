@@ -29,7 +29,8 @@ services:
       Sleeps_to_print: 3
     dns: <DNS server IP>
     volumes:
-      - ./volume:/app/log
+      - ./volume/db_monitor/log:/app/log
+      - ./volume/db_monitor/stats:/app/stats
 
   # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
   cloud:
@@ -46,7 +47,8 @@ services:
       - db_monitor
     dns: <DNS server IP>
     volumes:
-      - ./volume:/app/log
+      - ./volume/cloud/log:/app/log
+      - ./volume/cloud/stats:/app/stats
 
   edge1:
     container_name: edge1
@@ -63,7 +65,8 @@ services:
       - cloud
     dns: <DNS server IP>
     volumes:
-      - ./volume:/app/log
+      - ./volume/edges/log:/app/log
+      - ./volume/edges/stats:/app/stats
 
   edge2:
     container_name: edge2
@@ -81,7 +84,8 @@ services:
       - cloud
     dns: <DNS server IP>
     volumes:
-      - ./volume:/app/log
+      - ./volume/edges/log:/app/log
+      - ./volume/edges/stats:/app/stats
 
   workload:
     container_name: workload
@@ -96,7 +100,8 @@ services:
       Monitor_sleep: 60
     dns: <DNS server IP>
     volumes:
-      - ./volume:/app/log
+      - ./volume/workload/log:/app/log
+      - ./volume/workload/stats:/app/stats
 
 # mongoseed:
 #   image: mongo

@@ -49,11 +49,12 @@ def run_send_thread(edge_url: str, time_sleep: int, dataset, num_of_images: int)
                     dicts[sample['id']] = sample.to_dict()
 
             # Print the images names we are sending to ensure we are sending different images each time
+            print('Sending to', edge_url)
+
             print_images_names(dict_no_data)
 
             contents2 = json.dumps(dicts)
 
-            print('Sending to', edge_url)
             try:
                 res = requests.post(
                     edge_url, json=contents2, proxies=proxies)
