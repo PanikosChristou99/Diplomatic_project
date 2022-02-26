@@ -9,6 +9,17 @@ import logging
 from workload_helper import load_dataset, run_send_thread
 from datetime import datetime
 
+
+from hwcounter import Timer, count, count_end
+from time import sleep
+from math import sqrt
+
+start = count()
+sqrt(144) / 12
+elapsed = count_end() - start
+print(f'elapsed cycles: {elapsed}')
+
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 

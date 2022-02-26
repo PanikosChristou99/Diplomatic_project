@@ -17,6 +17,7 @@ from os import environ, getpid
 import logging
 from datetime import datetime
 import psutil
+from werkzeug.middleware.profiler import ProfilerMiddleware
 
 warnings.filterwarnings("ignore")
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -99,6 +100,9 @@ app = Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
 
+app.wsgi_app = ProfilerMiddleware(
+    app.wsgi_app, restrictions=[5], profile_dir='./stats')
+
 edge_csv_name_requests += '.csv'
 
 df = DataFrame(columns=collumns)
@@ -112,7 +116,7 @@ async def hello():
 
         print('I got content')
 
-        start_cpu = p.cpu_percent()
+        start_cpu = psutil.Process(getpid()).cpu_percent()
 
         content = request.get_json()
 
@@ -152,11 +156,11 @@ async def hello():
 
             if 'Preprocessing' in environ:
                 if ind == 1:
-                    start_pre = p.cpu_percent()
+                    start_pre = psutil.Process(getpid()).cpu_percent()
 
                 image, perc_smaller = preprocess_img(sample, image)
                 if ind == 1:
-                    end_pre = p.cpu_percent()
+                    end_pre = psutil.Process(getpid()).cpu_percent()
 
             start_ml = float(-1)
             end_ml = float(-1)
@@ -164,14 +168,14 @@ async def hello():
             # if model is assigned so we need to detect
             if 'ML' in environ:
                 if ind == 1:
-                    start_ml = p.cpu_percent()
+                    start_ml = psutil.Process(getpid()).cpu_percent()
 
                 edge_ml_name = edge_name + "_" + environ['ML']
 
                 detections = predict(image, device, model, classes)
 
                 if ind == 1:
-                    end_ml = p.cpu_percent()
+                    end_ml = psutil.Process(getpid()).cpu_percent()
 
                 # Save predictions to dataset as the name of edge and m
                 sample[edge_ml_name] = fo.Detections(
@@ -198,7 +202,7 @@ async def hello():
             None, send_to_cloud, to_send)  # fire and forget
 
         dataset2.delete()
-        end_cpu = p.cpu_percent()
+        end_cpu = psutil.Process(getpid()).cpu_percent()
 
         data = {'Start_CPU': start_cpu, 'End_CPU': end_cpu,
                 'Start_ML': start_ml, 'End_ML': end_ml,

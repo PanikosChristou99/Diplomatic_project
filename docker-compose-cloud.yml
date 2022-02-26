@@ -2,6 +2,21 @@ version: "3"
 #make sure preferences no comma last
 services:
 
+  cloud:
+    container_name: cloud
+    build: ./cloud
+    #TODO figure out if I need this since I don't use it
+    ports:
+      - "5000:5000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
+      Monitor_sleep: 10
+    dns: <DNS server IP>
+    volumes:
+      - ./volume/cloud/log:/app/log
+      - ./volume/cloud/stats:/app/stats
+
   edge1:
     container_name: edge1
     build: ./edge
@@ -11,10 +26,12 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       ML: 'retinanet_resnet50_fpn'
-      Preprocessing: BW,1,resize,75%,quality,75%
+      Preprocessing: BW,1,resize,25%,quality,25%
       Name: edge1
-      Monitor_sleep: 60
+      Monitor_sleep: 20
     dns: <DNS server IP>
+    depends_on:
+      - cloud
     volumes:
       - ./volume/edges/log:/app/log
       - ./volume/edges/stats:/app/stats
@@ -26,8 +43,8 @@ services:
       PYTHONUNBUFFERED: 1
       Edges: edge1
       Images: 2
-      Sleep: 5
-      Monitor_sleep: 4
+      Sleep: 8
+      Monitor_sleep: 10
     dns: <DNS server IP>
     volumes:
       - ./volume/workload/log:/app/log

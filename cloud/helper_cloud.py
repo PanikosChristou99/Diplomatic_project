@@ -229,7 +229,7 @@ def print_cpu(string: str, logger: logging.Logger, p=psutil.Process()):
     logger.info(string2)
 
 
-def network_monitor(edge_name: str, p: psutil.Process(), edge_csv_name_monitor):
+def network_monitor(edge_name: str, p, edge_csv_name_monitor):
 
     sleep_time = 60
 
