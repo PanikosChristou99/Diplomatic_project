@@ -10,3 +10,4 @@ pymongo
 flask[async]
 pandas
 numpy
+hwcounter

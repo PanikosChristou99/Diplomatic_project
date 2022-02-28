@@ -10,6 +10,7 @@ from time import ctime
 from flask import Flask, jsonify, request
 from PIL import Image
 from pandas import DataFrame, read_csv
+from psutil import cpu_count
 from torchvision import models
 from torch import device, cuda, set_num_threads
 from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud, network_monitor, setup_logger
@@ -17,10 +18,11 @@ from os import environ, getpid
 import logging
 from datetime import datetime
 import psutil
-from werkzeug.middleware.profiler import ProfilerMiddleware
+from hwcounter import Timer, count, count_end
 
 warnings.filterwarnings("ignore")
 warnings.simplefilter(action='ignore', category=FutureWarning)
+
 
 edge_name = environ['Name']
 d = datetime.today()
@@ -30,11 +32,6 @@ log_name = './log/' + d.strftime('%d_%m_%H_%M') + \
 
 logging.basicConfig(filename=log_name, encoding='utf-8',
                     force=True, filemode='w')
-
-
-# first cpu call and net work to start counting before startign threads
-p = psutil.Process(getpid())
-p.cpu_percent()
 
 
 environ['no_proxy'] = '*'
@@ -60,7 +57,7 @@ edge_csv_name_requests = './stats/' + \
 edge_csv_name_monitor = './stats/' + \
     d.strftime('%d_%m_%H_%M') + '_'+edge_name+'_monitor_'
 
-collumns = ['Start_CPU', 'End_CPU']
+collumns = ['cpu_cycles']
 
 
 ml = False
@@ -70,8 +67,7 @@ if 'ML' in environ:
     model_name = environ['ML']
     edge_csv_name_requests += model_name + '_'
     edge_csv_name_monitor += model_name + '_'
-    collumns.append('Start_ML')
-    collumns.append('End_ML')
+    collumns.append('ml_cycles')
 
     method = getattr(models.detection, model_name)
     model = method(pretrained=True)
@@ -87,9 +83,8 @@ if 'Preprocessing' in environ:
     preferences_str_replaced = preferences_str.replace(',', '_')
     edge_csv_name_requests += preferences_str_replaced+''
     edge_csv_name_monitor += preferences_str_replaced+''
-    collumns.append('Start_Preprocessing')
-    collumns.append('End_Preprocessing')
-    collumns.append('Image_size_reduction')
+    collumns.append('pre_cycles')
+    collumns.append('image_size_reduction')
 # print_cpu('Starting  with :', edge_logger)
 
 
@@ -99,9 +94,6 @@ if 'Name' not in environ:
 app = Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
-
-app.wsgi_app = ProfilerMiddleware(
-    app.wsgi_app, restrictions=[5], profile_dir='./stats')
 
 edge_csv_name_requests += '.csv'
 
@@ -116,7 +108,9 @@ async def hello():
 
         print('I got content')
 
-        start_cpu = psutil.Process(getpid()).cpu_percent()
+        start_cpu = count()
+        ml_cpu_temp = int(-1)
+        pre_cpu_temp = int(-1)
 
         content = request.get_json()
 
@@ -125,13 +119,13 @@ async def hello():
 
         dataset2 = fo.Dataset()
 
-        count = 0
+        count2 = 0
         # Create the fiftyone dataset dict
         for _, dict2 in content2.items():
             sample = fo.Sample.from_dict(dict2)
             # print(sample)
             dataset2.add_sample(sample)
-            count += 1
+            count2 += 1
 
         # Store ML results here
         results_dict = {}
@@ -150,32 +144,34 @@ async def hello():
             image_data = b64decode(sample.data)
             image = Image.open(BytesIO(image_data))
 
-            start_pre = float(-1)
-            end_pre = float(-1)
+            pre_cpu = int(-1)
             perc_smaller = float(-1)
 
             if 'Preprocessing' in environ:
                 if ind == 1:
-                    start_pre = psutil.Process(getpid()).cpu_percent()
+                    pre_cpu_temp = count_end()
+                    start_pre = count()
 
                 image, perc_smaller = preprocess_img(sample, image)
                 if ind == 1:
-                    end_pre = psutil.Process(getpid()).cpu_percent()
+                    pre_cpu = int(count_end() - start_pre)
+                    start_cpu = count()
 
-            start_ml = float(-1)
-            end_ml = float(-1)
+            ml_cpu = int(-1)
 
             # if model is assigned so we need to detect
             if 'ML' in environ:
                 if ind == 1:
-                    start_ml = psutil.Process(getpid()).cpu_percent()
+                    ml_cpu_temp = count_end()
+                    start_ml = count()
 
                 edge_ml_name = edge_name + "_" + environ['ML']
 
                 detections = predict(image, device, model, classes)
 
                 if ind == 1:
-                    end_ml = psutil.Process(getpid()).cpu_percent()
+                    ml_cpu = int(count_end() - start_ml)
+                    start_cpu = count()
 
                 # Save predictions to dataset as the name of edge and m
                 sample[edge_ml_name] = fo.Detections(
@@ -188,7 +184,7 @@ async def hello():
                 results_dict[sample.filepath] = dict(fo.Detections(
                     detections=detections).to_dict())
 
-        # uncomment this to pritn report
+        # uncomment this to pritn report IT HAS BUGS
         # if model_name:
         #     print_rep(dataset2, edge_ml_name , logger=edge_logger)
 
@@ -202,12 +198,19 @@ async def hello():
             None, send_to_cloud, to_send)  # fire and forget
 
         dataset2.delete()
-        end_cpu = psutil.Process(getpid()).cpu_percent()
 
-        data = {'Start_CPU': start_cpu, 'End_CPU': end_cpu,
-                'Start_ML': start_ml, 'End_ML': end_ml,
-                'Start_Preprocessing': start_pre, 'End_Preprocessing': end_pre,
-                'Image_size_reduction': perc_smaller
+        end_cpu = int(-1)
+        if 'ML' in environ and 'Preprocessing' in environ:
+            end_cpu = int(count_end() + pre_cpu_temp + ml_cpu_temp)
+        elif 'ML' in environ:
+            end_cpu = int(count_end() + ml_cpu_temp)
+
+        elif 'Preprocessing' in environ:
+            end_cpu = int(count_end() + pre_cpu_temp)
+        else:
+            end_cpu = int(count_end() - start_cpu)
+        data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu, 'pre_cycles': pre_cpu,
+                'image_size_reduction': perc_smaller
                 }
 
         df2 = read_csv(edge_csv_name_requests, index_col=0)
@@ -231,7 +234,7 @@ edge_csv_name_monitor += '_sleepTime_' + \
     str(sleep_time) + '.csv'
 
 p2 = Process(target=network_monitor, args=(
-    edge_name, p, edge_csv_name_monitor))
+    edge_name, edge_csv_name_monitor))
 
 p2.start()
 

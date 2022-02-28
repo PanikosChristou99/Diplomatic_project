@@ -19,6 +19,8 @@ from io import StringIO
 from multiprocessing.dummy import Process
 import sys
 import psutil
+from hwcounter import Timer, count, count_end
+
 
 proxies = {
     "http": None,
@@ -186,7 +188,7 @@ def print_rep(dataset2, edge_ml_name) -> list:
     string = 'Results for '+edge_ml_name + " are:"
     logging.info(string)
 
-    output = []
+    output = [string]
 
     with Capturing() as output:
         results.print_report(classes=classes_top10)
@@ -229,7 +231,7 @@ def print_cpu(string: str, logger: logging.Logger, p=psutil.Process()):
     logger.info(string2)
 
 
-def network_monitor(edge_name: str, p, edge_csv_name_monitor):
+def network_monitor(edge_name: str, edge_csv_name_monitor):
 
     sleep_time = 60
 
@@ -238,7 +240,7 @@ def network_monitor(edge_name: str, p, edge_csv_name_monitor):
 
     print(f'Starting {edge_csv_name_monitor} monitor')
 
-    data = {'CPU_Perc': [p.cpu_percent()], 'KBytes_sent': [
+    data = {'cpu_cycles': [int(0)], 'KBytes_sent': [
         0], 'KBytes_recieved': [0]}
 
     df = DataFrame(data)
@@ -246,14 +248,18 @@ def network_monitor(edge_name: str, p, edge_csv_name_monitor):
     df.to_csv(edge_csv_name_monitor)
 
     while True:
+        start_cpu = count()
         bytes_sent_before = psutil.net_io_counters().bytes_sent
         bytes_recv_before = psutil.net_io_counters().bytes_recv
         sleep(sleep_time)
+
+        elapsed = int(count_end()-start_cpu)
         diff_sent = (psutil.net_io_counters().bytes_sent -
                      bytes_sent_before) / 1000
         diff_recv = (psutil.net_io_counters().bytes_recv -
                      bytes_recv_before) / 1000
-        data2 = {'CPU_Perc': p.cpu_percent(), 'KBytes_sent': diff_sent,
+
+        data2 = {'cpu_cycles': elapsed, 'KBytes_sent': diff_sent,
                  "KBytes_recieved": diff_recv}
 
         df = df.append(data2, ignore_index=True)

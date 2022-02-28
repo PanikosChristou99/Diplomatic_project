@@ -8,16 +8,7 @@ from psutil import Process, net_io_counters
 import logging
 from workload_helper import load_dataset, run_send_thread
 from datetime import datetime
-
-
 from hwcounter import Timer, count, count_end
-from time import sleep
-from math import sqrt
-
-start = count()
-sqrt(144) / 12
-elapsed = count_end() - start
-print(f'elapsed cycles: {elapsed}')
 
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -40,6 +31,8 @@ p = Process(getpid())
 p.cpu_percent()
 
 bytes_sent_before = net_io_counters().bytes_sent
+start_cpu = count()
+
 
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
@@ -94,7 +87,7 @@ workloader_csv_name = workloader_csv_name + \
 
 print('Starting workloader with :', p.cpu_percent(), '%')
 
-data = {'CPU_Perc': [p.cpu_percent()], 'KBytes_sent': [0], }
+data = {'cpu_cycles': [p.cpu_percent()], 'KBytes_sent': [0], }
 
 df = pandas.DataFrame(data)
 
@@ -118,10 +111,14 @@ try:
         i += 1
 
         bytes_sent_after = net_io_counters().bytes_sent
-        diff_sent = (bytes_sent_after - bytes_sent_before) / 1000
-        bytes_sent_before = net_io_counters().bytes_sent
 
-        data2 = {'CPU_Perc': p.cpu_percent(), 'KBytes_sent': diff_sent}
+        diff_sent = (bytes_sent_after - bytes_sent_before) / 1000
+        elapsed = int(count_end() - start_cpu)
+
+        bytes_sent_before = net_io_counters().bytes_sent
+        start_cpu = count()
+
+        data2 = {'cpu_cycles': elapsed, 'KBytes_sent': diff_sent}
 
         df = df.append(data2, ignore_index=True)
         df.to_csv(workloader_csv_name, mode='w')

@@ -18,7 +18,7 @@ from multiprocessing import Process
 from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger, Capturing, send_to_mongo
 import logging
 from datetime import datetime
-from werkzeug.middleware.profiler import ProfilerMiddleware
+from hwcounter import Timer, count, count_end
 
 
 warnings.filterwarnings("ignore")
@@ -82,8 +82,6 @@ app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
 
-app.wsgi_app = ProfilerMiddleware(
-    app.wsgi_app, restrictions=[5], profile_dir='./stats/')
 
 cloud_csv_name_requests += '.csv'
 cloud_reports_name += '.txt'
@@ -97,7 +95,8 @@ df.to_csv(cloud_csv_name_requests)
 def hello():
     try:
         print('I got content')
-        start_cpu = psutil.Process(getpid()).cpu_percent()
+
+        start_cpu = count()
 
         content = flask.request.get_json()
 
@@ -132,18 +131,17 @@ def hello():
             image_data = b64decode(sample.data)
             image = Image.open(io.BytesIO(image_data))
 
-            start_ml = float(-1)
-            end_ml = float(-1)
+            ml_cpu = int(-1)
 
             # if model is assigned so we need to detect
             if model_name:
                 if ind == 1:
-                    start_ml = psutil.Process(getpid()).cpu_percent()
+                    start_ml = count()
 
                 res_name = "cloud_"+environ['ML']
                 detections = predict(image, device, model, classes)
                 if ind == 1:
-                    end_ml = psutil.Process(getpid()).cpu_percent()
+                    ml_cpu = int(count_end() - start_ml)
 
                 # Save predictions to dataset as the name of edge and m
                 sample[res_name] = fo.Detections(
@@ -190,12 +188,13 @@ def hello():
                 'models':  models
             }
 
+            # TODO UNCOMMENT THIS
             # send_to_mongo(dict1)
 
         dataset2.delete()
-        end_cpu = psutil.Process(getpid()).cpu_percent()
-        data = {'Start_CPU': start_cpu, 'End_CPU': end_cpu,
-                'Start_ML': start_ml, 'End_ML': end_ml}
+        end_cpu = int(count_end() - start_cpu)
+
+        data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu}
 
         df2 = read_csv(cloud_csv_name_requests, index_col=0)
         df3 = df2.append(
@@ -209,7 +208,7 @@ def hello():
 
 
 p2 = Process(target=network_monitor, args=(
-    "Cloud", p, cloud_csv_name_monitor))
+    "Cloud", cloud_csv_name_monitor))
 p2.start()
 
 # if 'Port' not in environ:
