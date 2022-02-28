@@ -109,8 +109,8 @@ async def hello():
         print('I got content')
 
         start_cpu = count()
-        ml_cpu_temp = int(-1)
-        pre_cpu_temp = int(-1)
+        ml_cpu_temp = -1
+        pre_cpu_temp = -1
 
         content = request.get_json()
 
@@ -134,6 +134,10 @@ async def hello():
 
         ind = 0
 
+        pre_cpu = -1
+        perc_smaller = -1
+        ml_cpu = -1
+
         for sample in dataset2:
             ind += 1
 
@@ -144,9 +148,6 @@ async def hello():
             image_data = b64decode(sample.data)
             image = Image.open(BytesIO(image_data))
 
-            pre_cpu = int(-1)
-            perc_smaller = float(-1)
-
             if 'Preprocessing' in environ:
                 if ind == 1:
                     pre_cpu_temp = count_end()
@@ -154,10 +155,8 @@ async def hello():
 
                 image, perc_smaller = preprocess_img(sample, image)
                 if ind == 1:
-                    pre_cpu = int(count_end() - start_pre)
+                    pre_cpu = count_end() - start_pre
                     start_cpu = count()
-
-            ml_cpu = int(-1)
 
             # if model is assigned so we need to detect
             if 'ML' in environ:
@@ -170,7 +169,7 @@ async def hello():
                 detections = predict(image, device, model, classes)
 
                 if ind == 1:
-                    ml_cpu = int(count_end() - start_ml)
+                    ml_cpu = count_end() - start_ml
                     start_cpu = count()
 
                 # Save predictions to dataset as the name of edge and m
@@ -199,16 +198,16 @@ async def hello():
 
         dataset2.delete()
 
-        end_cpu = int(-1)
+        end_cpu = -1
         if 'ML' in environ and 'Preprocessing' in environ:
-            end_cpu = int(count_end() + pre_cpu_temp + ml_cpu_temp)
+            end_cpu = count_end() - start_cpu + pre_cpu_temp + ml_cpu_temp
         elif 'ML' in environ:
-            end_cpu = int(count_end() + ml_cpu_temp)
+            end_cpu = count_end() - start_cpu + ml_cpu_temp
 
         elif 'Preprocessing' in environ:
-            end_cpu = int(count_end() + pre_cpu_temp)
+            end_cpu = count_end() - start_cpu + pre_cpu_temp
         else:
-            end_cpu = int(count_end() - start_cpu)
+            end_cpu = count_end() - start_cpu
         data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu, 'pre_cycles': pre_cpu,
                 'image_size_reduction': perc_smaller
                 }

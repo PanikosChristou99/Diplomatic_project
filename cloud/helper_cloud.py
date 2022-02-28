@@ -246,6 +246,7 @@ def network_monitor(edge_name: str, edge_csv_name_monitor):
     df = DataFrame(data)
 
     df.to_csv(edge_csv_name_monitor)
+    sleep(1)
 
     while True:
         start_cpu = count()

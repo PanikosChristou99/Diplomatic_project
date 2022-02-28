@@ -59,7 +59,7 @@ cloud_csv_name_monitor = './stats/' + \
 cloud_reports_name = './stats/' + d.strftime('%d_%m_%H_%M') + \
     '_cloud_report_'
 
-collumns = ['Start_CPU', 'End_CPU']
+collumns = ['cpu_cycles']
 
 
 # if we have a custom ML then use that
@@ -69,8 +69,7 @@ if 'ML' in environ:
     cloud_csv_name_monitor += model_name
     cloud_reports_name += model_name + '_'
 
-    collumns.append('Start_ML')
-    collumns.append('End_ML')
+    collumns.append('ml_cycles')
 
     method = getattr(models.detection, model_name)
     model = method(pretrained=True)
@@ -91,12 +90,13 @@ df = DataFrame(columns=collumns)
 df.to_csv(cloud_csv_name_requests)
 
 
-@app.route('/endpoint', methods=['POST'])
+@ app.route('/endpoint', methods=['POST'])
 def hello():
     try:
         print('I got content')
 
         start_cpu = count()
+        ml_cpu_temp = -1
 
         content = flask.request.get_json()
 
@@ -120,6 +120,8 @@ def hello():
 
         ind = 0
 
+        ml_cpu = -1
+
         for sample in dataset2:
 
             ind += 1
@@ -131,17 +133,17 @@ def hello():
             image_data = b64decode(sample.data)
             image = Image.open(io.BytesIO(image_data))
 
-            ml_cpu = int(-1)
-
             # if model is assigned so we need to detect
             if model_name:
                 if ind == 1:
+                    ml_cpu_temp = count_end()
                     start_ml = count()
 
                 res_name = "cloud_"+environ['ML']
                 detections = predict(image, device, model, classes)
                 if ind == 1:
-                    ml_cpu = int(count_end() - start_ml)
+                    ml_cpu = count_end() - start_ml
+                    start_cpu = count()
 
                 # Save predictions to dataset as the name of edge and m
                 sample[res_name] = fo.Detections(
@@ -192,7 +194,13 @@ def hello():
             # send_to_mongo(dict1)
 
         dataset2.delete()
-        end_cpu = int(count_end() - start_cpu)
+        end_cpu = -1
+
+        if 'ML' in environ:
+            end_cpu = count_end() - start_cpu + ml_cpu_temp
+
+        else:
+            end_cpu = count_end() - start_cpu
 
         data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu}
 

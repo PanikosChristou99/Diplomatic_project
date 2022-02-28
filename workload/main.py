@@ -106,6 +106,7 @@ for i, edge in enumerate(edges):
 
 print('Starting workloader monitor')
 i = 0
+sleep(1)
 try:
     while True:
         i += 1

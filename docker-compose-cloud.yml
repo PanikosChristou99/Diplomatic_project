@@ -10,7 +10,7 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
+      ML: 'retinanet_resnet50_fpn'
       Monitor_sleep: 10
     dns: <DNS server IP>
     volumes:
@@ -25,10 +25,10 @@ services:
       - "5001:5001"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'retinanet_resnet50_fpn'
+      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
       Preprocessing: BW,1,resize,25%,quality,25%
       Name: edge1
-      Monitor_sleep: 20
+      Monitor_sleep: 10
     dns: <DNS server IP>
     depends_on:
       - cloud
