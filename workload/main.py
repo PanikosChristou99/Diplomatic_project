@@ -4,7 +4,7 @@ from os import environ, getpid
 from time import sleep
 import warnings
 import pandas
-from psutil import Process, net_io_counters
+from psutil import Process, net_io_counters, virtual_memory
 import logging
 from workload_helper import load_dataset, run_send_thread
 from datetime import datetime
@@ -87,9 +87,8 @@ workloader_csv_name = workloader_csv_name + \
 
 print('Starting workloader with :', p.cpu_percent(), '%')
 
-data = {'cpu_cycles': [p.cpu_percent()], 'KBytes_sent': [0], }
 
-df = pandas.DataFrame(data)
+df = pandas.DataFrame()
 
 df.to_csv(workloader_csv_name)
 
@@ -105,21 +104,26 @@ for i, edge in enumerate(edges):
         None, run_send_thread, edge_url, time_sleep, dataset, images)  # fire and forget
 
 print('Starting workloader monitor')
-i = 0
+
 sleep(1)
 try:
     while True:
-        i += 1
 
         bytes_sent_after = net_io_counters().bytes_sent
 
         diff_sent = (bytes_sent_after - bytes_sent_before) / 1000
-        elapsed = int(count_end() - start_cpu)
 
         bytes_sent_before = net_io_counters().bytes_sent
         start_cpu = count()
 
-        data2 = {'cpu_cycles': elapsed, 'KBytes_sent': diff_sent}
+        elapsed = int(count_end() - start_cpu)
+        mem = virtual_memory()
+
+        vram_used = mem.used / 1024/1024  # MBytes
+        ram_used = mem.active / 1024/1024  # MBytes
+
+        data2 = {'cpu_cycles': elapsed, 'KBytes_sent': diff_sent,
+                 'vram_used_MBytes': vram_used, 'ram_active_MBytes': ram_used}
 
         df = df.append(data2, ignore_index=True)
         df.to_csv(workloader_csv_name, mode='w')

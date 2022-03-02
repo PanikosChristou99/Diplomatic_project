@@ -59,7 +59,7 @@ cloud_csv_name_monitor = './stats/' + \
 cloud_reports_name = './stats/' + d.strftime('%d_%m_%H_%M') + \
     '_cloud_report_'
 
-collumns = ['cpu_cycles']
+collumns = ['cpu_cycles', 'milli_taken']
 
 
 # if we have a custom ML then use that
@@ -95,6 +95,7 @@ def hello():
     try:
         print('I got content')
 
+        start_time = datetime.now()
         start_cpu = count()
         ml_cpu_temp = -1
 
@@ -193,6 +194,8 @@ def hello():
             # TODO UNCOMMENT THIS
             # send_to_mongo(dict1)
 
+        num_of_images = len(dataset2)
+
         dataset2.delete()
         end_cpu = -1
 
@@ -202,7 +205,10 @@ def hello():
         else:
             end_cpu = count_end() - start_cpu
 
-        data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu}
+        time_taken = datetime.now() - start_time
+
+        data = {'cpu_cycles': end_cpu,
+                'ml_cycles': ml_cpu, 'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images}
 
         df2 = read_csv(cloud_csv_name_requests, index_col=0)
         df3 = df2.append(

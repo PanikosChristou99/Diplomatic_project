@@ -57,7 +57,7 @@ edge_csv_name_requests = './stats/' + \
 edge_csv_name_monitor = './stats/' + \
     d.strftime('%d_%m_%H_%M') + '_'+edge_name+'_monitor_'
 
-collumns = ['cpu_cycles']
+collumns = ['cpu_cycles', 'milli_taken']
 
 
 ml = False
@@ -108,6 +108,7 @@ async def hello():
 
         print('I got content')
 
+        start_time = datetime.now()
         start_cpu = count()
         ml_cpu_temp = -1
         pre_cpu_temp = -1
@@ -196,6 +197,8 @@ async def hello():
         get_event_loop().run_in_executor(
             None, send_to_cloud, to_send)  # fire and forget
 
+        num_of_images = len(dataset2)
+
         dataset2.delete()
 
         end_cpu = -1
@@ -208,8 +211,11 @@ async def hello():
             end_cpu = count_end() - start_cpu + pre_cpu_temp
         else:
             end_cpu = count_end() - start_cpu
+
+        time_taken = datetime.now() - start_time
+
         data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu, 'pre_cycles': pre_cpu,
-                'image_size_reduction': perc_smaller
+                'image_size_reduction': perc_smaller,  'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images
                 }
 
         df2 = read_csv(edge_csv_name_requests, index_col=0)

@@ -2,6 +2,7 @@
 # A function that sends to edge the dictionary
 # This function is passed to a thread to be ran and be forgotten about
 
+from psutil import virtual_memory
 from hwcounter import Timer, count, count_end
 from base64 import b64encode
 from logging import INFO, FileHandler, Formatter, Logger, getLogger
@@ -216,10 +217,7 @@ def network_monitor(edge_name, edge_csv_name_monitor):
 
     print(f'Starting {edge_csv_name_monitor} monitor')
 
-    data = {'cpu_cycles': [int(0)], 'KBytes_sent': [
-        0], 'KBytes_recieved': [0]}
-
-    df = DataFrame(data)
+    df = DataFrame()
 
     df.to_csv(edge_csv_name_monitor)
     sleep(1)
@@ -236,8 +234,15 @@ def network_monitor(edge_name, edge_csv_name_monitor):
         diff_recv = (psutil.net_io_counters().bytes_recv -
                      bytes_recv_before) / 1000
 
+        elapsed = int(count_end() - start_cpu)
+        mem = virtual_memory()
+
+        vram_used = mem.used / 1024/1024  # MBytes
+        ram_used = mem.active / 1024/1024  # MBytes
+
         data2 = {'cpu_cycles': elapsed, 'KBytes_sent': diff_sent,
-                 "KBytes_recieved": diff_recv}
+                 "KBytes_recieved": diff_recv,
+                 'vram_used_MBytes': vram_used, 'ram_active_MBytes': ram_used}
 
         df = df.append(data2, ignore_index=True)
         df.to_csv(edge_csv_name_monitor)

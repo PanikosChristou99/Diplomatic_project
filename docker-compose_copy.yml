@@ -1,6 +1,36 @@
 version: "3"
-#make sure preferences no comma last
+
 services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_DATABASE: diplomatic_db
+    command: mongod --port 27017 --nojournal --profile 0 --setParameter diagnosticDataCollectionEnabled=false
+    expose:
+      - 27017
+    volumes:
+      - ./mongoDB/database:/data/db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    logging:
+      driver: "none"
+    dns: <DNS server IP>
+
+  db_monitor:
+    container_name: db_monitor
+    build: ./db_monitor
+    depends_on:
+      - mongodb
+    environment:
+      PYTHONUNBUFFERED: 1
+      Monitor_sleep: 60
+      Sleeps_to_print: 3
+    dns: <DNS server IP>
+    volumes:
+      - ./volume/db_monitor/log:/app/log
+      - ./volume/db_monitor/stats:/app/stats
 
   # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
   cloud:
@@ -11,8 +41,10 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'retinanet_resnet50_fpn'
-      Monitor_sleep: 15
+      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
+      Monitor_sleep: 60
+    depends_on:
+      - db_monitor
     dns: <DNS server IP>
     volumes:
       - ./volume/cloud/log:/app/log
@@ -26,9 +58,9 @@ services:
       - "5001:5001"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
+      ML: 'retinanet_resnet50_fpn'
       Name: edge1
-      Monitor_sleep: 15
+      Monitor_sleep: 60
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -47,7 +79,7 @@ services:
       ML: maskrcnn_resnet50_fpn
       Preprocessing: BW,1,resize,25%,quality,25%
       Name: edge2
-      Monitor_sleep: 15
+      Monitor_sleep: 60
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -63,10 +95,20 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: edge1,edge2
-      Images: 10,2
-      Sleep: 6,20
-      Monitor_sleep: 15
+      Images: 20,10
+      Sleep: 40,20
+      Monitor_sleep: 60
     dns: <DNS server IP>
     volumes:
       - ./volume/workload/log:/app/log
       - ./volume/workload/stats:/app/stats
+
+# mongoseed:
+#   image: mongo
+#   container_name: mongoseed
+#   volumes:
+#     - ./mongoDB/init:/init
+#   command: mongoimport --host mongodb --db diplomatic_db --collection col
+#     --jsonArray --file /init/init.json && python3 /init/db_monitor.py
+#   depends_on:
+#     - mongodb
