@@ -1,0 +1,12 @@
+cloud_ml='fasterrcnn_mobilenet_v3_large_320_fpn'
+sleep_cloud = 10
+edge1_ml = 'retinanet_resnet50_fpn'
+edge2_ml = 'maskrcnn_resnet50_fpn'
+edge1_pre = 'BW,1,resize,25%,quality,25%'
+edge2_pre = ''
+edge1_sleep = 10
+edge2_sleep = 10
+workload_edges = 'edge1,edge2'
+workload_num_of_images = '10,1'
+workload_edges_sleeps = '10,15'
+workload_sleep = 10

@@ -3,14 +3,14 @@ version: "3"
 services:
 
   workload:
-    container_name: workload
+    container_name: 'workload'
     build: ./workload
     environment:
       PYTHONUNBUFFERED: 1
-      Edges: edge1,edge2
-      Images: 1,2
-      Sleep: 4,8
-      Monitor_sleep: 3
+      Edges: ${workload_edges}
+      Images: ${workload_edges_sleeps}
+      Sleep: ${workload_edges_sleeps}
+      Monitor_sleep: ${workload_sleep}
     dns: <DNS server IP>
     volumes:
       - ./volume/workload/log:/app/log

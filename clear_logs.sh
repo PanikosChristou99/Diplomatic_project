@@ -27,3 +27,8 @@ touch ./volume/db_monitor/log/empty_to_stay_in_git.txt
 rm -rf ./volume/db_monitor/stats/*
 touch ./volume/db_monitor/stats/empty_to_stay_in_git.txt 
 
+rm -rf ./volume/runs/env/*
+touch ./volume/runs/env/empty_to_stay_in_git.txt 
+
+rm -rf ./volume/runs/output/*
+touch ./volume/runs/output/empty_to_stay_in_git.txt 

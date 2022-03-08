@@ -1,36 +1,36 @@
 version: "3"
 
 services:
-  mongodb:
-    image: mongo
-    container_name: mongodb
-    environment:
-      MONGO_INITDB_DATABASE: diplomatic_db
-    command: mongod --port 27017 --nojournal --profile 0 --setParameter diagnosticDataCollectionEnabled=false
-    expose:
-      - 27017
-    volumes:
-      - ./mongoDB/database:/data/db
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    logging:
-      driver: "none"
-    dns: <DNS server IP>
+  # mongodb:
+  #   image: mongo
+  #   container_name: mongodb
+  #   environment:
+  #     MONGO_INITDB_DATABASE: diplomatic_db
+  #   command: mongod --port 27017 --nojournal --profile 0 --setParameter diagnosticDataCollectionEnabled=false
+  #   expose:
+  #     - 27017
+  #   volumes:
+  #     - ./mongoDB/database:/data/db
+  #   restart: unless-stopped
+  #   ports:
+  #     - "27017:27017"
+  #   logging:
+  #     driver: "none"
+  #   dns: <DNS server IP>
 
-  db_monitor:
-    container_name: db_monitor
-    build: ./db_monitor
-    depends_on:
-      - mongodb
-    environment:
-      PYTHONUNBUFFERED: 1
-      Monitor_sleep: 60
-      Sleeps_to_print: 3
-    dns: <DNS server IP>
-    volumes:
-      - ./volume/db_monitor/log:/app/log
-      - ./volume/db_monitor/stats:/app/stats
+  # db_monitor:
+  #   container_name: db_monitor
+  #   build: ./db_monitor
+  #   depends_on:
+  #     - mongodb
+  #   environment:
+  #     PYTHONUNBUFFERED: 1
+  #     Monitor_sleep: 60
+  #     Sleeps_to_print: 3
+  #   dns: <DNS server IP>
+  #   volumes:
+  #     - ./volume/db_monitor/log:/app/log
+  #     - ./volume/db_monitor/stats:/app/stats
 
   # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
   cloud:
@@ -41,10 +41,10 @@ services:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'fasterrcnn_mobilenet_v3_large_320_fpn'
-      Monitor_sleep: 60
-    depends_on:
-      - db_monitor
+      ML: ${cloud_ml}
+      Monitor_sleep: ${sleep_cloud}
+    # depends_on:
+    #   - db_monitor
     dns: <DNS server IP>
     volumes:
       - ./volume/cloud/log:/app/log
@@ -58,9 +58,10 @@ services:
       - "5001:5001"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: 'retinanet_resnet50_fpn'
+      ML: ${edge1_ml}
+      Preprocessing: ${edge1_pre}
       Name: edge1
-      Monitor_sleep: 60
+      Monitor_sleep: ${edge1_sleep}
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -76,10 +77,10 @@ services:
       - "5002:5002"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: maskrcnn_resnet50_fpn
-      Preprocessing: BW,1,resize,25%,quality,25%
+      ML: ${edge2_ml}
+      Preprocessing: ${edge2_pre}
       Name: edge2
-      Monitor_sleep: 60
+      Monitor_sleep: ${edge2_sleep}
     depends_on:
       - cloud
     dns: <DNS server IP>
@@ -94,10 +95,10 @@ services:
       - cloud
     environment:
       PYTHONUNBUFFERED: 1
-      Edges: edge1,edge2
-      Images: 20,10
-      Sleep: 40,20
-      Monitor_sleep: 60
+      Edges: ${workload_edges}
+      Images: ${workload_edges_sleeps}
+      Sleep: ${workload_edges_sleeps}
+      Monitor_sleep: ${workload_sleep}
     dns: <DNS server IP>
     volumes:
       - ./volume/workload/log:/app/log

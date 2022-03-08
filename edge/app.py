@@ -13,10 +13,10 @@ from pandas import DataFrame, read_csv
 from psutil import cpu_count
 from torchvision import models
 from torch import device, cuda, set_num_threads
-from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud, network_monitor, setup_logger
+from helper_edge import load_dataset, predict, preprocess_img, print_cpu, print_rep, send_to_cloud, network_monitor, parse_rep
 from os import environ, getpid
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import psutil
 from hwcounter import Timer, count, count_end
 
@@ -25,9 +25,9 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 edge_name = environ['Name']
-d = datetime.today()
+d = datetime.now() + timedelta(hours=2)
 
-log_name = './log/' + d.strftime('%d_%m_%H_%M') + \
+log_name = './log/' + d.strftime('%H_%M_%d_%m') + \
     '_' + edge_name + '_logger' + '.log'
 
 logging.basicConfig(filename=log_name, encoding='utf-8',
@@ -53,16 +53,16 @@ model = None
 model_name = ""
 
 edge_csv_name_requests = './stats/' + \
-    d.strftime('%d_%m_%H_%M') + '_' + edge_name+'_requests_'
+    d.strftime('%H_%M_%d_%m') + '_' + edge_name+'_requests_'
 edge_csv_name_monitor = './stats/' + \
-    d.strftime('%d_%m_%H_%M') + '_'+edge_name+'_monitor_'
+    d.strftime('%H_%M_%d_%m') + '_'+edge_name+'_monitor_'
 
 collumns = ['cpu_cycles', 'milli_taken']
 
 
 ml = False
 # if we have a custom ML then use that
-if 'ML' in environ:
+if 'ML' in environ and environ['ML'] != '':
     ml = True
     model_name = environ['ML']
     edge_csv_name_requests += model_name + '_'
@@ -77,7 +77,7 @@ if 'ML' in environ:
 
 pre = False
 
-if 'Preprocessing' in environ:
+if 'Preprocessing' in environ and environ['Preprocessing'] != '':
     pre = True
     preferences_str = environ['Preprocessing']
     preferences_str_replaced = preferences_str.replace(',', '_')
@@ -149,7 +149,7 @@ async def hello():
             image_data = b64decode(sample.data)
             image = Image.open(BytesIO(image_data))
 
-            if 'Preprocessing' in environ:
+            if pre:
                 if ind == 1:
                     pre_cpu_temp = count_end()
                     start_pre = count()
@@ -160,7 +160,7 @@ async def hello():
                     start_cpu = count()
 
             # if model is assigned so we need to detect
-            if 'ML' in environ:
+            if ml:
                 if ind == 1:
                     ml_cpu_temp = count_end()
                     start_ml = count()
@@ -184,9 +184,12 @@ async def hello():
                 results_dict[sample.filepath] = dict(fo.Detections(
                     detections=detections).to_dict())
 
-        # uncomment this to pritn report IT HAS BUGS
-        # if model_name:
-        #     print_rep(dataset2, edge_ml_name , logger=edge_logger)
+        rep_dict = {}
+        if ml:
+            output = []
+            output.extend(print_rep(dataset2, edge_ml_name))
+
+            rep_dict = parse_rep(output)
 
         to_send = {'edge_name': edge_name, 'samples_dict': sample_dict}
 
@@ -202,12 +205,12 @@ async def hello():
         dataset2.delete()
 
         end_cpu = -1
-        if 'ML' in environ and 'Preprocessing' in environ:
+        if ml and pre:
             end_cpu = count_end() - start_cpu + pre_cpu_temp + ml_cpu_temp
-        elif 'ML' in environ:
+        elif ml:
             end_cpu = count_end() - start_cpu + ml_cpu_temp
 
-        elif 'Preprocessing' in environ:
+        elif pre:
             end_cpu = count_end() - start_cpu + pre_cpu_temp
         else:
             end_cpu = count_end() - start_cpu
@@ -217,6 +220,7 @@ async def hello():
         data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu, 'pre_cycles': pre_cpu,
                 'image_size_reduction': perc_smaller,  'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images
                 }
+        data = {**rep_dict, **data}
 
         df2 = read_csv(edge_csv_name_requests, index_col=0)
         df2 = df2.append(

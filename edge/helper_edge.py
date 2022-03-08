@@ -2,6 +2,11 @@
 # A function that sends to edge the dictionary
 # This function is passed to a thread to be ran and be forgotten about
 
+import re
+import pandas
+from typing import Sequence
+import logging
+import sys
 from psutil import virtual_memory
 from hwcounter import Timer, count, count_end
 from base64 import b64encode
@@ -162,17 +167,17 @@ def predict(image, device, model, classes):
 
 class Capturing(list):
     def __enter__(self):
-        self._stdout = stdout
-        stdout = self._stringio = StringIO()
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
         return self
 
     def __exit__(self, *args):
         self.extend(self._stringio.getvalue().splitlines())
         del self._stringio    # free up some memory
-        stdout = self._stdout
+        sys.stdout = self._stdout
 
 
-def print_rep(dataset2, edge_ml_name: str, logger: Logger):
+def print_rep(dataset2, edge_ml_name) -> list:
     # Uncomment the below to print the report for this ML
     high_conf_view = dataset2.filter_labels(
         edge_ml_name, F("confidence") > 0.75)
@@ -190,16 +195,20 @@ def print_rep(dataset2, edge_ml_name: str, logger: Logger):
     classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
 
     # Print a classification report for the top-10 classes
-    string = 'Results for ' + edge_ml_name + " are:"
-    logger.info(string)
+    # string = 'Results for '+edge_ml_name + " are:"
+    # logging.info(string)
 
-    output = [string]
+    output = []
 
     with Capturing() as output:
         results.print_report(classes=classes_top10)
 
     for line in output:
-        logger.info(str(line))
+        print(line)
+        logging.info(str(line))
+        pass
+
+    return output
 
 
 def print_cpu(string: str, logger: Logger, p=psutil.Process(), ):
@@ -248,17 +257,53 @@ def network_monitor(edge_name, edge_csv_name_monitor):
         df.to_csv(edge_csv_name_monitor)
 
 
-formatter = Formatter('%(asctime)s %(levelname)s %(message)s')
+names = ["item_name", "precision", "recall", "f1_score", "support"]
 
 
-def setup_logger(name, log_file, level=INFO):
-    """To setup as many loggers as you want"""
+def parse_rep(lines: Sequence[str]) -> dict:
 
-    handler = FileHandler(log_file, mode='w')
-    handler.setFormatter(formatter)
+    start_lines = []
+    end_lines = []
 
-    logger = getLogger(name)
-    logger.setLevel(level)
-    logger.addHandler(handler)
+    for line in lines[2:12]:
+        line = '   '+line
 
-    return logger
+        line = re.sub('[^A-Za-z0-9] +[^A-Za-z0-9]', '\t', line)
+        start_lines.append(line)
+
+    # string = "\n".join(line[1:] for line in start_lines)
+
+    # # print(string)
+
+    # detentions = StringIO(string)
+
+    df = pandas.read_csv(StringIO("\n".join(line[1:] for line in start_lines)), sep='\t', index_col=None,
+                         names=names, header=None)
+
+    # print(df)
+
+    # print('-----------------')
+
+    for line in lines[13:16]:
+        line = '   '+line
+
+        line = re.sub('[^A-Za-z0-9] +[^A-Za-z0-9]', '\t', line)
+        end_lines.append(line)
+
+        # print(line)
+
+    df2 = pandas.read_csv(StringIO("\n".join(line[1:] for line in end_lines)), sep='\t', index_col=None,
+                          names=names, header=None)
+
+    df = df.append(df2)
+    # print(df)
+
+    ret_dict = {}
+
+    ret_dict['item_names'] = df["item_name"].tolist()
+    ret_dict['precision'] = df["precision"].tolist()
+    ret_dict['recall'] = df["recall"].tolist()
+    ret_dict['f1_score'] = df["f1_score"].tolist()
+    ret_dict['support'] = df["support"].tolist()
+
+    return(ret_dict)

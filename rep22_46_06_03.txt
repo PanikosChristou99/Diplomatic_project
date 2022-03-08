@@ -1,0 +1,16 @@
+               precision    recall  f1-score   support
+
+       person       0.93      0.75      0.83        53
+        chair       0.71      0.26      0.38        19
+         book       0.83      0.31      0.45        16
+       bottle       0.40      0.17      0.24        12
+          cup       0.80      0.40      0.53        10
+tennis racket       1.00      0.75      0.86         4
+      handbag       0.00      0.00      0.00         4
+         bowl       0.80      1.00      0.89         4
+     backpack       1.00      0.25      0.40         4
+ potted plant       0.67      0.67      0.67         3
+
+    micro avg       0.84      0.51      0.63       129
+    macro avg       0.71      0.46      0.53       129
+ weighted avg       0.79      0.51      0.60       129

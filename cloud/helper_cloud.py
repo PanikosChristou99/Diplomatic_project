@@ -2,6 +2,9 @@
 # A function that sends to edge the dictionary
 # This function is passed to a thread to be ran and be forgotten about
 
+import re
+import pandas
+from typing import Sequence
 import logging
 from fiftyone import ViewField as F
 import fiftyone as fo
@@ -186,16 +189,17 @@ def print_rep(dataset2, edge_ml_name) -> list:
     classes_top10 = sorted(counts, key=counts.get, reverse=True)[:10]
 
     # Print a classification report for the top-10 classes
-    string = 'Results for '+edge_ml_name + " are:"
-    logging.info(string)
+    # string = 'Results for '+edge_ml_name + " are:"
+    # logging.info(string)
 
-    output = [string]
+    output = []
 
     with Capturing() as output:
         results.print_report(classes=classes_top10)
 
     for line in output:
-        logging.info(str(line))
+        # logging.info(str(line))
+        pass
 
     return output
 
@@ -272,17 +276,53 @@ def network_monitor(edge_name: str, edge_csv_name_monitor):
         df.to_csv(edge_csv_name_monitor)
 
 
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+names = ["item_name", "precision", "recall", "f1_score", "support"]
 
 
-def setup_logger(name, log_file, level=logging.INFO):
-    """To setup as many loggers as you want"""
+def parse_rep(lines: Sequence[str]) -> dict:
 
-    handler = logging.FileHandler(log_file, mode='w')
-    handler.setFormatter(formatter)
+    start_lines = []
+    end_lines = []
 
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
-    logger.addHandler(handler)
+    for line in lines[2:12]:
+        line = '   '+line
 
-    return logger
+        line = re.sub('[^A-Za-z0-9] +[^A-Za-z0-9]', '\t', line)
+        start_lines.append(line)
+
+    # string = "\n".join(line[1:] for line in start_lines)
+
+    # # print(string)
+
+    # detentions = StringIO(string)
+
+    df = pandas.read_csv(StringIO("\n".join(line[1:] for line in start_lines)), sep='\t', index_col=None,
+                         names=names, header=None)
+
+    # print(df)
+
+    # print('-----------------')
+
+    for line in lines[13:1]:
+        line = '   '+line
+
+        line = re.sub('[^A-Za-z0-9] +[^A-Za-z0-9]', '\t', line)
+        end_lines.append(line)
+
+        # print(line)
+
+    df2 = pandas.read_csv(StringIO("\n".join(line[1:] for line in end_lines)), sep='\t', index_col=None,
+                          names=names, header=None)
+
+    df = df.append(df2)
+    # print(df)
+
+    ret_dict = {}
+
+    ret_dict['item_names'] = df["item_name"].tolist()
+    ret_dict['precision'] = df["precision"].tolist()
+    ret_dict['recall'] = df["recall"].tolist()
+    ret_dict['f1_score'] = df["f1_score"].tolist()
+    ret_dict['support'] = df["support"].tolist()
+
+    return(ret_dict)

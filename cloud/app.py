@@ -15,18 +15,18 @@ from torchvision import models
 from torch import device, cuda
 from bson.json_util import loads
 from multiprocessing import Process
-from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, setup_logger, Capturing, send_to_mongo
+from helper_cloud import load_dataset, predict, print_rep, print_cpu, network_monitor, Capturing, send_to_mongo, parse_rep
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from hwcounter import Timer, count, count_end
 
 
 warnings.filterwarnings("ignore")
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-d = datetime.today()
+d = datetime.now() + timedelta(hours=2)
 
-log_name = './log/' + d.strftime('%d_%m_%H_%M') + \
+log_name = './log/' + d.strftime('%H_%M_%d_%m') + \
     '_cloud_logger' + '.log'
 
 
@@ -53,10 +53,10 @@ model = None
 model_name = ""
 
 cloud_csv_name_requests = './stats/' + \
-    d.strftime('%d_%m_%H_%M') + '_cloud_requests_'
+    d.strftime('%H_%M_%d_%m') + '_cloud_requests_'
 cloud_csv_name_monitor = './stats/' + \
-    d.strftime('%d_%m_%H_%M') + '_cloud_monitor_'
-cloud_reports_name = './stats/' + d.strftime('%d_%m_%H_%M') + \
+    d.strftime('%H_%M_%d_%m') + '_cloud_monitor_'
+cloud_reports_name = './stats/' + d.strftime('%H_%M_%d_%m') + \
     '_cloud_report_'
 
 collumns = ['cpu_cycles', 'milli_taken']
@@ -159,40 +159,25 @@ def hello():
 
                 # uncomment this to pritn report
 
-        output = [
-            '-------------------------------------------------------------------------']
-
+        rep_dict = {}
         if model_name:
-            output.extend(print_rep(dataset2, res_name))
 
+            rep_dict = parse_rep(print_rep(dataset2, res_name))
+
+        rep_dict2 = {}
         # the edge ran an ML so lets find its results
         if 'results_ML_name' in content2:
-            output.extend(print_rep(
+            rep_dict2 = parse_rep(print_rep(
                 dataset2, content2['results_ML_name']))
 
-        if len(output) != 1:
-            output.append(
-                '-------------------------------------------------------------------------')
-            string = "\n".join(line for line in output)
-            with open(cloud_reports_name, "a+") as f:
-                f.write(string)
+        dict1 = {
+            'time': ctime(),
+            'rep_cloud': rep_dict,
+            'rep_edge': rep_dict2
+        }
 
-            models = ""
-            if model_name:
-                models += model_name
-
-            # the edge ran an ML so lets find its results
-            if 'results_ML_name' in content2:
-                models += content2['results_ML_name']
-
-            dict1 = {
-                'time': ctime(),
-                'output': string,
-                'models':  models
-            }
-
-            # TODO UNCOMMENT THIS
-            # send_to_mongo(dict1)
+        # TODO UNCOMMENT THIS
+        # send_to_mongo(dict1)
 
         num_of_images = len(dataset2)
 
@@ -209,6 +194,8 @@ def hello():
 
         data = {'cpu_cycles': end_cpu,
                 'ml_cycles': ml_cpu, 'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images}
+
+        data = {**rep_dict, **rep_dict2, **data}
 
         df2 = read_csv(cloud_csv_name_requests, index_col=0)
         df3 = df2.append(

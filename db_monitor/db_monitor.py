@@ -4,7 +4,7 @@ from pandas import DataFrame
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 from os import environ
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import logging
 
@@ -33,16 +33,16 @@ i = 0
 sleeps = 0
 
 
-d = datetime.today()
+d = datetime.now() + timedelta(hours=2)
 
 logger_filename = './log/' + \
-    d.strftime('%d_%m_%H_%M') + '_db_monitor_logger.log'
+    d.strftime('%H_%M_%d_%m') + '_db_monitor_logger.log'
 logging.basicConfig(filename=logger_filename,
                     encoding='utf-8', force=True,  filemode='w')
 
 
 workloader_csv_name = './stats/' + \
-    d.strftime('%d_%m_%H_%M') + '_' + sleep_time + '_' + \
+    d.strftime('%H_%M_%d_%m') + '_' + sleep_time + '_' + \
     sleeps_to_print+'_db_monitor.log'
 
 data = {'num_of_documets': [0]}
