@@ -25,7 +25,7 @@ def write_new_env(env: dict):
     for key, val in env.items():
         environ[key] = str(val)
         # Write changes to .env file.
-        dotenv.set_key(dotenv_file, key, val)
+        dotenv.set_key(dotenv_file, key, str(val))
 
 
 def update_env(key: str, val: str):
