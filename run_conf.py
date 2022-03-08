@@ -51,7 +51,8 @@ def run_compose(sleep_time: int):
 
     with open('./temp.sh', 'wb') as f:
         f.write(str.encode('# !/bin/bash\n'))
-        f.write(str.encode('docker-compose -f "./docker-compose.yml" up --build & '))
+        f.write(str.encode(
+            'docker-compose -f "./docker-compose.yml" up --build -d\n'))
         f.write(str.encode('echo "Sleeping for {sleep_time} secs"\n'))
         f.write(str.encode('sleep ' + str(sleep_time) + 's\n'))
         f.write(str.encode('docker-compose stop\n'))
