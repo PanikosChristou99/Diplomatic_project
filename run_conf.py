@@ -57,8 +57,8 @@ def run_compose(sleep_time: int):
     with open(output_name, "a") as output:
         processes = [
             subprocess.Popen(
-                'docker-compose -f "docker-compose-edge.yml" up --build -d', stdout=output),
-            subprocess.Popen('bash ./temp.sh')]
+                'docker-compose -f "docker-compose-edge.yml" up --build -d', shell=True, stdout=output),
+            subprocess.Popen('./temp.sh', shell=True)]
 
         for p in processes:
             p.wait()
