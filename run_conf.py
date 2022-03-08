@@ -51,7 +51,7 @@ def run_compose(sleep_time: int):
 
     with open('./temp.sh', 'wb') as f:
         f.write(str.encode('# !/bin/bash\n'))
-        f.write(str.encode('docker-compose -f "./docker-compose.yml" up --build\n'))
+        f.write(str.encode('docker-compose -f "./docker-compose.yml" up --build ; '))
         f.write(str.encode('sleep ' + str(sleep_time) + 's\n'))
         f.write(str.encode('docker-compose stop\n'))
 
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     with open(done_file, 'w') as f:
         f.write(f'Starting at {curr_time}')
 
-    secs = 60 * 10
+    secs = 60 * 2
     step_one(secs)
     step_two(secs)
     step_three(secs)
