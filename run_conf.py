@@ -248,7 +248,7 @@ if __name__ == '__main__':
     with open(done_file, 'w') as f:
         f.write(f'Starting at {curr_time}')
 
-    secs = 60 * 10 * 2
+    secs = 60 * 10
     step_one(secs)
     step_two(secs)
     step_three(secs)
