@@ -231,6 +231,7 @@ def step_five(secs):
         update_env('edge2_ml', model)
 
         run_compose(secs)
+        write_to_done_file("Pog")
 
     curr_time = datetime.now().strftime('%H_%M_%d_%m')
     string = 'Done with step five at' + curr_time
