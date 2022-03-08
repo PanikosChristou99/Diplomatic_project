@@ -52,8 +52,8 @@ def run_compose(sleep_time: int):
     with open('./temp.sh', 'wb') as f:
         f.write(str.encode('# !/bin/bash\n'))
         f.write(str.encode(
-            'docker-compose -f "./docker-compose.yml" up --build -d\n'))
-        f.write(str.encode('echo "Sleeping for {sleep_time} secs"\n'))
+            'docker-compose -f "./docker-compose.yml" up --build -d &\n'))
+        f.write(str.encode(f'echo "Sleeping for {sleep_time} secs"\n'))
         f.write(str.encode('sleep ' + str(sleep_time) + 's\n'))
         f.write(str.encode('docker-compose stop\n'))
 
@@ -63,6 +63,7 @@ def run_compose(sleep_time: int):
 
 
 def write_to_done_file(msg: str):
+    msg += '\n'
     with open(done_file, 'a') as f:
         f.write(msg)
 
@@ -247,7 +248,7 @@ if __name__ == '__main__':
     with open(done_file, 'w') as f:
         f.write(f'Starting at {curr_time}')
 
-    secs = 60 * 2
+    secs = 60 * 10
     step_one(secs)
     step_two(secs)
     step_three(secs)
