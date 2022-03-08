@@ -51,17 +51,13 @@ def run_compose(sleep_time: int):
 
     with open('./temp.sh', 'wb') as f:
         f.write(str.encode('# !/bin/bash\n'))
+        f.write(str.encode('docker-compose -f "docker-compose.yml" up --build -d'))
         f.write(str.encode('sleep ' + str(sleep_time) + 's\n'))
         f.write(str.encode('docker-compose stop\n'))
 
     with open(output_name, "a") as output:
-        processes = [
-            subprocess.Popen(
-                'docker-compose -f "docker-compose.yml" up --build -d', shell=True, stdout=output),
-            subprocess.Popen('./temp.sh', shell=True)]
-
-        for p in processes:
-            p.wait()
+        process = subprocess.Popen('./temp.sh', shell=True, stdout=output)
+        process.wait()
 
 
 def write_to_done_file(msg: str):
