@@ -37,6 +37,12 @@ def update_env(key: str, val: str):
     dotenv.set_key(dotenv_file, key, val)
 
 
+def write_to_done_file(msg: str):
+    msg += '\n'
+    with open(done_file, 'a') as f:
+        f.write(msg)
+
+
 def run_compose(sleep_time: int):
 
     d = datetime.now()
@@ -61,11 +67,7 @@ def run_compose(sleep_time: int):
         process = subprocess.Popen('./temp.sh', shell=True, stdout=output)
         process.wait()
 
-
-def write_to_done_file(msg: str):
-    msg += '\n'
-    with open(done_file, 'a') as f:
-        f.write(msg)
+    write_to_done_file("Pog")
 
 
 done_file = "./proggress.txt"
@@ -234,7 +236,6 @@ def step_five(secs):
         update_env('edge2_ml', model)
 
         run_compose(secs)
-        write_to_done_file("Pog")
 
     curr_time = datetime.now().strftime('%H_%M_%d_%m')
     string = 'Done with step five at' + curr_time
