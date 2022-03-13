@@ -303,7 +303,7 @@ def parse_rep(lines: Sequence[str]) -> dict:
 
     # print('-----------------')
 
-    for line in lines[13:1]:
+    for line in lines[13:16]:
         line = '   '+line
 
         line = re.sub('[^A-Za-z0-9] +[^A-Za-z0-9]', '\t', line)

@@ -81,7 +81,7 @@ app = flask.Flask(__name__)
 # This allows for running the app and taking in requests from the same computer
 flask_cors.CORS(app)
 
-
+cloud_csv_name_monitor += '.csv'
 cloud_csv_name_requests += '.csv'
 cloud_reports_name += '.txt'
 
@@ -167,8 +167,13 @@ def hello():
         rep_dict2 = {}
         # the edge ran an ML so lets find its results
         if 'results_ML_name' in content2:
-            rep_dict2 = parse_rep(print_rep(
+            rep_dict2_temp = parse_rep(print_rep(
                 dataset2, content2['results_ML_name']))
+
+            rep_dict2 = {}
+            for key in rep_dict2_temp:
+                new_key = "edge_"+key
+                rep_dict2[new_key] = rep_dict2_temp[key]
 
         dict1 = {
             'time': ctime(),
