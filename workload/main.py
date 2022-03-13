@@ -14,9 +14,9 @@ from hwcounter import Timer, count, count_end
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
-d = datetime.now() + timedelta(hours=2) + timedelta(hours=2)
+d = datetime.now() + timedelta(hours=2)
 
-logger_filename = './log/' + d.strftime('%H_%M_%d_%m') + '_workload_logger.log'
+logger_filename = './log/' + d.strftime('%m_%d_%H_%M') + '_workload_logger.log'
 logging.basicConfig(filename=logger_filename,
                     encoding='utf-8', force=True,  filemode='w')
 
@@ -72,7 +72,7 @@ sleep_time = 60
 if "Monitor_sleep" in environ:
     sleep_time = int(environ['Monitor_sleep'])
 
-workloader_csv_name = './stats/' + d.strftime('%H_%M_%d_%m') + '_workload_'
+workloader_csv_name = './stats/' + d.strftime('%m_%d_%H_%M') + '_workload_'
 
 for i, edge in enumerate(edges):
     workloader_filename = str(edge) + \

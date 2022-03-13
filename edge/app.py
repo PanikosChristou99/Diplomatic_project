@@ -27,7 +27,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 edge_name = environ['Name']
 d = datetime.now() + timedelta(hours=2)
 
-log_name = './log/' + d.strftime('%H_%M_%d_%m') + \
+log_name = './log/' + d.strftime('%m_%d_%H_%M') + \
     '_' + edge_name + '_logger' + '.log'
 
 logging.basicConfig(filename=log_name, encoding='utf-8',
@@ -53,9 +53,9 @@ model = None
 model_name = ""
 
 edge_csv_name_requests = './stats/' + \
-    d.strftime('%H_%M_%d_%m') + '_' + edge_name+'_requests_'
+    d.strftime('%m_%d_%H_%M') + '_' + edge_name+'_requests_'
 edge_csv_name_monitor = './stats/' + \
-    d.strftime('%H_%M_%d_%m') + '_'+edge_name+'_monitor_'
+    d.strftime('%m_%d_%H_%M') + '_'+edge_name+'_monitor_'
 
 collumns = ['cpu_cycles', 'milli_taken']
 

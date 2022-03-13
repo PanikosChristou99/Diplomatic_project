@@ -26,7 +26,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 d = datetime.now() + timedelta(hours=2)
 
-log_name = './log/' + d.strftime('%H_%M_%d_%m') + \
+log_name = './log/' + d.strftime('%m_%d_%H_%M') + \
     '_cloud_logger' + '.log'
 
 
@@ -53,10 +53,10 @@ model = None
 model_name = ""
 
 cloud_csv_name_requests = './stats/' + \
-    d.strftime('%H_%M_%d_%m') + '_cloud_requests_'
+    d.strftime('%m_%d_%H_%M') + '_cloud_requests_'
 cloud_csv_name_monitor = './stats/' + \
-    d.strftime('%H_%M_%d_%m') + '_cloud_monitor_'
-cloud_reports_name = './stats/' + d.strftime('%H_%M_%d_%m') + \
+    d.strftime('%m_%d_%H_%M') + '_cloud_monitor_'
+cloud_reports_name = './stats/' + d.strftime('%m_%d_%H_%M') + \
     '_cloud_report_'
 
 collumns = ['cpu_cycles', 'milli_taken']
@@ -172,7 +172,7 @@ def hello():
 
             rep_dict2 = {}
             for key in rep_dict2_temp:
-                new_key = content2['results_ML_name']+key
+                new_key = content2['results_ML_name'] + "_"+key
                 rep_dict2[new_key] = rep_dict2_temp[key]
 
         dict1 = {
