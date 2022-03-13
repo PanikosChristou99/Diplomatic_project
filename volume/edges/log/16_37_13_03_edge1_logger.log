@@ -1,0 +1,45 @@
+INFO:fiftyone.zoo.datasets:Downloading split 'validation' to '/root/fiftyone/coco-2017/validation' if necessary
+INFO:fiftyone.utils.coco:Found annotations at '/root/fiftyone/coco-2017/raw/instances_val2017.json'
+INFO:fiftyone.utils.coco:Sufficient images already downloaded
+INFO:fiftyone.zoo.datasets:Existing download of split 'validation' is sufficient
+INFO:fiftyone.zoo.datasets:Loading existing dataset 'coco-2017-val'. To reload from disk, either delete the existing dataset or provide a custom `dataset_name` to use
+WARNING:werkzeug: * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+INFO:werkzeug: * Running on http://172.19.0.3:5000/ (Press CTRL+C to quit)
+DEBUG:asyncio:Using selector: EpollSelector
+INFO:fiftyone.utils.eval.detection:Evaluating detections...
+INFO:eta.core.utils: 100% |█████████| 11/11 [157.6ms elapsed, 0s remaining, 69.8 samples/s]     
+INFO:fiftyone.utils.eval.coco:Performing IoU sweep...
+INFO:eta.core.utils: 100% |█████████| 11/11 [280.0ms elapsed, 0s remaining, 39.3 samples/s]      
+INFO:root:               precision    recall  f1-score   support
+INFO:root:
+INFO:root:       person       0.45      0.24      0.31        21
+INFO:root:       banana       0.00      0.00      0.00         0
+INFO:root:         bowl       0.50      0.25      0.33         4
+INFO:root:        spoon       0.00      0.00      0.00         4
+INFO:root:parking meter       0.00      0.00      0.00         7
+INFO:root:       bottle       0.00      0.00      0.00         3
+INFO:root:     broccoli       0.00      0.00      0.00         7
+INFO:root:        donut       0.00      0.00      0.00         7
+INFO:root:      bicycle       0.00      0.00      0.00         6
+INFO:root:         bird       0.00      0.00      0.00         4
+INFO:root:
+INFO:root:    micro avg       0.38      0.10      0.15        63
+INFO:root:    macro avg       0.10      0.05      0.06        63
+INFO:root: weighted avg       0.18      0.10      0.13        63
+INFO:root:
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): cloud:5000
+INFO:werkzeug:172.19.0.4 - - [13/Mar/2022 14:37:53] "POST /endpoint HTTP/1.1" 200 -
+DEBUG:urllib3.connectionpool:http://cloud:5000 "POST /endpoint HTTP/1.1" 200 27
+ERROR:concurrent.futures:exception calling callback for <Future at 0x7f9043247d60 state=finished returned NoneType>
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.9/concurrent/futures/_base.py", line 329, in _invoke_callbacks
+    callback(self)
+  File "/usr/local/lib/python3.9/asyncio/futures.py", line 398, in _call_set_state
+    dest_loop.call_soon_threadsafe(_set_state, destination, source)
+  File "/usr/local/lib/python3.9/asyncio/base_events.py", line 791, in call_soon_threadsafe
+    self._check_closed()
+  File "/usr/local/lib/python3.9/asyncio/base_events.py", line 510, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+DEBUG:asyncio:Using selector: EpollSelector

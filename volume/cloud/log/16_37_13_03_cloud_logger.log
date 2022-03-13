@@ -1,0 +1,17 @@
+INFO:fiftyone.zoo.datasets:Downloading split 'validation' to '/root/fiftyone/coco-2017/validation' if necessary
+INFO:fiftyone.utils.coco:Found annotations at '/root/fiftyone/coco-2017/raw/instances_val2017.json'
+INFO:fiftyone.utils.coco:Sufficient images already downloaded
+INFO:fiftyone.zoo.datasets:Existing download of split 'validation' is sufficient
+INFO:fiftyone.zoo.datasets:Loading existing dataset 'coco-2017-val'. To reload from disk, either delete the existing dataset or provide a custom `dataset_name` to use
+WARNING:werkzeug: * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+INFO:werkzeug: * Running on http://172.19.0.2:5000/ (Press CTRL+C to quit)
+INFO:fiftyone.utils.eval.detection:Evaluating detections...
+INFO:eta.core.utils: 100% |█████████| 11/11 [165.1ms elapsed, 0s remaining, 66.6 samples/s]     
+INFO:fiftyone.utils.eval.coco:Performing IoU sweep...
+INFO:eta.core.utils: 100% |█████████| 11/11 [141.2ms elapsed, 0s remaining, 77.9 samples/s]     
+INFO:fiftyone.utils.eval.detection:Evaluating detections...
+INFO:eta.core.utils: 100% |█████████| 11/11 [178.7ms elapsed, 0s remaining, 61.6 samples/s]     
+INFO:fiftyone.utils.eval.coco:Performing IoU sweep...
+INFO:eta.core.utils: 100% |█████████| 11/11 [269.1ms elapsed, 0s remaining, 40.9 samples/s]      
+INFO:werkzeug:172.19.0.3 - - [13/Mar/2022 14:37:58] "POST /endpoint HTTP/1.1" 200 -

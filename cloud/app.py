@@ -172,7 +172,7 @@ def hello():
 
             rep_dict2 = {}
             for key in rep_dict2_temp:
-                new_key = "edge_"+key
+                new_key = content2['results_ML_name']+key
                 rep_dict2[new_key] = rep_dict2_temp[key]
 
         dict1 = {
