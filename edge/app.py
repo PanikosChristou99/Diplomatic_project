@@ -153,15 +153,18 @@ async def hello():
             image_data = b64decode(sample.data)
             image = Image.open(BytesIO(image_data))
 
+            # print("Here")
             if pre:
                 if ind == 1:
                     pre_cpu_temp = count_end()
                     start_pre = count()
 
                 start_pre_time = datetime.now()
+                # print("Here2")
+
                 image, perc_smaller, prev_size, new_size = preprocess_img(
                     sample, image)
-
+                # print("Here3")
                 total_pre_time += (datetime.now() -
                                    start_pre_time).microseconds / 1000
 

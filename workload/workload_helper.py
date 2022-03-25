@@ -41,8 +41,11 @@ def run_send_thread(workloader_csv_name, dataset, images, edge_urls):
                 req_times = []
                 for _ in range(images[-1]):
 
+                    print(images)
+                    print(edge_urls)
+                    print(images[-1])
                     start_req_time = datetime.now()
-                    predictions_view = dataset.take(images[i])
+                    predictions_view = dataset.take(2)
 
                     # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
                     dicts = {}

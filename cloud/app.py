@@ -213,9 +213,9 @@ def hello():
         return jsonify(ctime())
 
 
-p2 = Process(target=network_monitor, args=(
-    "Cloud", cloud_csv_name_monitor))
-p2.start()
+# p2 = Process(target=network_monitor, args=(
+#     "Cloud", cloud_csv_name_monitor))
+# p2.start()
 
 # if 'Port' not in environ:
 #     print('Did not specify "Port"')
