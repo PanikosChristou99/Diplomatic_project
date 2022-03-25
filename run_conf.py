@@ -105,13 +105,13 @@ def step_one(secs: int):
                 for model2 in other:
 
                     if pre != "":
-                        update_env('edge1_pre', 'BW,{bw}')
-                        update_env('edge1_pre', 'BW,{bw}')
+                        update_env(f'edge1_pre', 'BW,{bw}')
+                        update_env(f'edge1_pre', 'BW,{bw}')
                     else:
                         update_env(
-                            'edge1_pre', 'BW,{bw},resize,{pre},quality,{pre}')
+                            f'edge1_pre', 'BW,{bw},resize,{pre},quality,{pre}')
                         update_env(
-                            'edge1_pre', 'BW,{bw},resize,{pre},quality,{pre}')
+                            f'edge1_pre', 'BW,{bw},resize,{pre},quality,{pre}')
 
                     update_env('edge1_ml', model1)
                     update_env('edge2_ml', model2)
