@@ -30,9 +30,6 @@ environ['no_proxy'] = '*'
 p = Process(getpid())
 p.cpu_percent()
 
-bytes_sent_before = net_io_counters().bytes_sent
-start_cpu = count()
-
 
 # Load coco dataset so that we can get the classes of the images,
 # the data is already since we had built it in the base image
@@ -48,6 +45,7 @@ edges = edges_str.split(',')
 
 
 num_of_images = [5 for _ in edges]
+num_of_images.append(20)  # last one is repeated
 
 if "Images" not in environ:
     print('You did not Images so sending 5 to all ')
@@ -57,29 +55,26 @@ else:
         num_of_images[i] = int(images_ar[i])
 
 
-num_of_sleeps = [40 for _ in edges]
-
-if "Sleep" not in environ:
-    print('You did not specify sleep so 40 to all ')
-else:
-    sleep_ar = environ["Sleep"].split(',')
-    for i, val in enumerate(sleep_ar):
-        num_of_sleeps[i] = int(sleep_ar[i])
-
-
-sleep_time = 60
+sleep_time = 4
 
 if "Monitor_sleep" in environ:
     sleep_time = int(environ['Monitor_sleep'])
 
-workloader_csv_name = './stats/' + d.strftime('%m_%d_%H_%M') + '_workload_'
+workloader_csv_name = './stats/' + \
+    d.strftime('%m_%d_%H_%M') + '_workload_monitor_'
+workloader_csv_name2 = './stats/' + \
+    d.strftime('%m_%d_%H_%M') + '_workload_requests_'
 
 for i, edge in enumerate(edges):
     workloader_filename = str(edge) + \
-        '_' + str(num_of_images[i]) + '_' + str(num_of_sleeps[i]) + '_'
+        '_' + str(num_of_images[i]) + '_'
 
     workloader_csv_name += workloader_filename
+    workloader_csv_name2 += workloader_filename
 
+
+workloader_csv_name2 = workloader_csv_name2 + \
+    '_sleepTime_' + str(sleep_time) + '.csv'
 
 workloader_csv_name = workloader_csv_name + \
     '_sleepTime_' + str(sleep_time) + '.csv'
@@ -91,19 +86,26 @@ print('Starting workloader with :', p.cpu_percent(), '%')
 df = pandas.DataFrame()
 
 df.to_csv(workloader_csv_name)
+df.to_csv(workloader_csv_name2)
 
+edge_urls = []
+images = []
 
 for i, edge in enumerate(edges):
 
     edge_url = 'http://' + edge + ':5000/endpoint'
+    edge_urls.append(edge_url)
+    images.append(num_of_images[i])
 
-    time_sleep = num_of_sleeps[i]
-    images = num_of_images[i]
-    # Send to edge the workload its workload
-    get_event_loop().run_in_executor(
-        None, run_send_thread, edge_url, time_sleep, dataset, images)  # fire and forget
+images.append(num_of_images[-1])
+get_event_loop().run_in_executor(
+    None, run_send_thread, workloader_csv_name2, dataset, images, edge_urls)  # fire and forget
+
 
 print('Starting workloader monitor')
+
+bytes_sent_before = net_io_counters().bytes_sent
+start_cpu = count()
 
 sleep(1)
 try:

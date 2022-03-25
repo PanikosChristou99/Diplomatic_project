@@ -132,7 +132,7 @@ def preprocess_img(sample, image):
     image = Image.open(new_path)
     # remove ot not fill space
     remove(new_path)
-    return image, percent_smaller
+    return image, percent_smaller, prev_size, new_size
 
 
 def predict(image, device, model, classes):

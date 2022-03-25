@@ -138,6 +138,10 @@ async def hello():
         pre_cpu = -1
         perc_smaller = -1
         ml_cpu = -1
+        total_before_size = 0
+        total_after_size = 0
+        total_ml_time = 0
+        total_pre_time = 0
 
         for sample in dataset2:
             ind += 1
@@ -154,7 +158,16 @@ async def hello():
                     pre_cpu_temp = count_end()
                     start_pre = count()
 
-                image, perc_smaller = preprocess_img(sample, image)
+                start_pre_time = datetime.now()
+                image, perc_smaller, prev_size, new_size = preprocess_img(
+                    sample, image)
+
+                total_pre_time += (datetime.now() -
+                                   start_pre_time).microseconds / 1000
+
+                total_before_size += prev_size
+                total_after_size += new_size
+
                 if ind == 1:
                     pre_cpu = count_end() - start_pre
                     start_cpu = count()
@@ -165,9 +178,12 @@ async def hello():
                     ml_cpu_temp = count_end()
                     start_ml = count()
 
+                start_ml_time = datetime.now()
                 edge_ml_name = edge_name + "_" + environ['ML']
 
                 detections = predict(image, device, model, classes)
+                total_ml_time += (datetime.now() -
+                                  start_ml_time).microseconds / 1000
 
                 if ind == 1:
                     ml_cpu = count_end() - start_ml
@@ -193,9 +209,9 @@ async def hello():
 
         to_send = {'edge_name': edge_name, 'samples_dict': sample_dict}
 
-        if ml:
-            to_send['results_ML_name'] = edge_ml_name
-            to_send['results_dict'] = results_dict
+        # if ml:
+        #     to_send['results_ML_name'] = edge_ml_name
+        #     to_send['results_dict'] = results_dict
 
         get_event_loop().run_in_executor(
             None, send_to_cloud, to_send)  # fire and forget
@@ -218,7 +234,7 @@ async def hello():
         time_taken = datetime.now() - start_time
 
         data = {'cpu_cycles': end_cpu, 'ml_cycles': ml_cpu, 'pre_cycles': pre_cpu,
-                'image_size_reduction': perc_smaller,  'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images
+                'image_size_reduction': perc_smaller,  'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images, 'total_before_size': total_before_size, 'total_after_size': total_after_size, "total_ml_time_milli": total_ml_time, "total_pre_time_milli": total_pre_time
                 }
         data = {**rep_dict, **data}
 

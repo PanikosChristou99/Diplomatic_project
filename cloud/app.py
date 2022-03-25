@@ -95,117 +95,117 @@ def hello():
     try:
         print('I got content')
 
-        start_time = datetime.now()
-        start_cpu = count()
-        ml_cpu_temp = -1
+        # start_time = datetime.now()
+        # start_cpu = count()
+        # ml_cpu_temp = -1
 
-        content = flask.request.get_json()
+        # content = flask.request.get_json()
 
-        # Create the dict of the dicts from the json sent
-        content2 = loads(content)
+        # # Create the dict of the dicts from the json sent
+        # content2 = loads(content)
 
-        # Create the fiftyone dataset dict
-        samples_dict = content2['samples_dict']
+        # # Create the fiftyone dataset dict
+        # samples_dict = content2['samples_dict']
 
-        dataset2 = fo.Dataset()
+        # dataset2 = fo.Dataset()
 
-        # Fill the dataset with the data recieved
-        for _, dict2 in samples_dict.items():
-            sample = fo.Sample.from_dict(dict2)
-            # print(sample)
-            dataset2.add_sample(sample)
+        # # Fill the dataset with the data recieved
+        # for _, dict2 in samples_dict.items():
+        #     sample = fo.Sample.from_dict(dict2)
+        #     # print(sample)
+        #     dataset2.add_sample(sample)
 
-        # Store ML results here
-        results_dict = {}
-        sample_dict = {}
+        # # Store ML results here
+        # results_dict = {}
+        # sample_dict = {}
 
-        ind = 0
+        # ind = 0
 
-        ml_cpu = -1
+        # ml_cpu = -1
 
-        for sample in dataset2:
+        # for sample in dataset2:
 
-            ind += 1
+        #     ind += 1
 
-            # Load image
+        #     # Load image
 
-            # image_data = b64decode(sample.data)
-            # dec_data = open(sample.data, mode="r", encoding="utf-8")
-            image_data = b64decode(sample.data)
-            image = Image.open(io.BytesIO(image_data))
+        #     # image_data = b64decode(sample.data)
+        #     # dec_data = open(sample.data, mode="r", encoding="utf-8")
+        #     image_data = b64decode(sample.data)
+        #     image = Image.open(io.BytesIO(image_data))
 
-            # if model is assigned so we need to detect
-            if model_name:
-                if ind == 1:
-                    ml_cpu_temp = count_end()
-                    start_ml = count()
+        #     # if model is assigned so we need to detect
+        #     if model_name:
+        #         if ind == 1:
+        #             ml_cpu_temp = count_end()
+        #             start_ml = count()
 
-                res_name = "cloud_"+environ['ML']
-                detections = predict(image, device, model, classes)
-                if ind == 1:
-                    ml_cpu = count_end() - start_ml
-                    start_cpu = count()
+        #         res_name = "cloud_"+environ['ML']
+        #         detections = predict(image, device, model, classes)
+        #         if ind == 1:
+        #             ml_cpu = count_end() - start_ml
+        #             start_cpu = count()
 
-                # Save predictions to dataset as the name of edge and m
-                sample[res_name] = fo.Detections(
-                    detections=detections)
-                # Update sample with this ML res
-                sample.save()
-                sample_dict[sample['id']] = sample.to_dict()
+        #         # Save predictions to dataset as the name of edge and m
+        #         sample[res_name] = fo.Detections(
+        #             detections=detections)
+        #         # Update sample with this ML res
+        #         sample.save()
+        #         sample_dict[sample['id']] = sample.to_dict()
 
-                # Add them to the sent dict as well
-                results_dict[sample.filepath] = dict(fo.Detections(
-                    detections=detections).to_dict())
+        #         # Add them to the sent dict as well
+        #         results_dict[sample.filepath] = dict(fo.Detections(
+        #             detections=detections).to_dict())
 
-                # uncomment this to pritn report
+        #         # uncomment this to pritn report
 
-        rep_dict = {}
-        if model_name:
+        # rep_dict = {}
+        # if model_name:
 
-            rep_dict = parse_rep(print_rep(dataset2, res_name))
+        #     rep_dict = parse_rep(print_rep(dataset2, res_name))
 
-        rep_dict2 = {}
-        # the edge ran an ML so lets find its results
-        if 'results_ML_name' in content2:
-            rep_dict2_temp = parse_rep(print_rep(
-                dataset2, content2['results_ML_name']))
+        # rep_dict2 = {}
+        # # the edge ran an ML so lets find its results
+        # if 'results_ML_name' in content2:
+        #     rep_dict2_temp = parse_rep(print_rep(
+        #         dataset2, content2['results_ML_name']))
 
-            rep_dict2 = {}
-            for key in rep_dict2_temp:
-                new_key = content2['results_ML_name'] + "_"+key
-                rep_dict2[new_key] = rep_dict2_temp[key]
+        #     rep_dict2 = {}
+        #     for key in rep_dict2_temp:
+        #         new_key = content2['results_ML_name'] + "_"+key
+        #         rep_dict2[new_key] = rep_dict2_temp[key]
 
-        dict1 = {
-            'time': ctime(),
-            'rep_cloud': rep_dict,
-            'rep_edge': rep_dict2
-        }
+        # dict1 = {
+        #     'time': ctime(),
+        #     'rep_cloud': rep_dict,
+        #     'rep_edge': rep_dict2
+        # }
 
-        # TODO UNCOMMENT THIS
-        # send_to_mongo(dict1)
+        # # TODO UNCOMMENT THIS
+        # # send_to_mongo(dict1)
 
-        num_of_images = len(dataset2)
+        # num_of_images = len(dataset2)
 
-        dataset2.delete()
-        end_cpu = -1
+        # dataset2.delete()
+        # end_cpu = -1
 
-        if 'ML' in environ:
-            end_cpu = count_end() - start_cpu + ml_cpu_temp
+        # if 'ML' in environ:
+        #     end_cpu = count_end() - start_cpu + ml_cpu_temp
 
-        else:
-            end_cpu = count_end() - start_cpu
+        # else:
+        #     end_cpu = count_end() - start_cpu
 
-        time_taken = datetime.now() - start_time
+        # time_taken = datetime.now() - start_time
 
-        data = {'cpu_cycles': end_cpu,
-                'ml_cycles': ml_cpu, 'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images}
+        # data = {'cpu_cycles': end_cpu,
+        #         'ml_cycles': ml_cpu, 'milli_taken': (time_taken.microseconds / 1000), 'num_of_images': num_of_images}
 
-        data = {**rep_dict, **rep_dict2, **data}
+        # data = {**rep_dict, **rep_dict2, **data}
 
-        df2 = read_csv(cloud_csv_name_requests, index_col=0)
-        df3 = df2.append(
-            data, ignore_index=True)
-        df3.to_csv(cloud_csv_name_requests, mode='w')
+        # df2 = read_csv(cloud_csv_name_requests, index_col=0)
+        # df3 = df2.append(
+        #     data, ignore_index=True)
+        # df3.to_csv(cloud_csv_name_requests, mode='w')
 
         return jsonify(ctime())
     except Exception as e:

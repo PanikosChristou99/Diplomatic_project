@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from ast import Dict, While
 from base64 import b64encode
@@ -5,6 +6,7 @@ import json
 from os import path
 from time import sleep
 import fiftyone.zoo as foz
+from pandas import read_csv
 import psutil
 import requests
 
@@ -27,48 +29,65 @@ def load_dataset():
     return dataset
 
 
-# Function that sends a  dictionary in json format to a url in a time frame
-def run_send_thread(edge_url: str, time_sleep: int, dataset, num_of_images: int):
+# Function that sends a  dictionary in json format to all the edges
+def run_send_thread(workloader_csv_name, dataset, images, edge_urls):
 
     while True:
         try:
-            predictions_view = dataset.take(num_of_images)
 
-            # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
-            dicts = {}
-            # This dict is the same as above but without the picture encoded, I print this some tims to debug stuff
-            dict_no_data = {}
+            for i, edge_url in enumerate(edge_urls):
 
-            for sample in predictions_view:
-                with open(sample.filepath, "rb") as image:
-                    # Add to the smaller the dct the data for thsi sample
-                    dict_no_data[sample['id']] = sample.to_dict()
-                    # Write the base64 encoded image to the Sample
-                    sample['data'] = b64encode(image.read()).decode('utf-8')
-                    # Add the sample to the dict to be sent as workload
-                    dicts[sample['id']] = sample.to_dict()
+                start_time = datetime.now()
+                req_times = []
+                for _ in range(images[-1]):
 
-            # Print the images names we are sending to ensure we are sending different images each time
-            print('Sending to', edge_url)
+                    start_req_time = datetime.now()
+                    predictions_view = dataset.take(images[i])
 
-            print_images_names(dict_no_data)
+                    # Dictionary with the picture encoded in base64, as well as all attributes the image has like what it contains, dimensions etc. (What fiftyone natively has)
+                    dicts = {}
+                    # This dict is the same as above but without the picture encoded, I print this some tims to debug stuff
+                    dict_no_data = {}
 
-            contents2 = json.dumps(dicts)
+                    for sample in predictions_view:
+                        with open(sample.filepath, "rb") as image:
+                            # Add to the smaller the dct the data for thsi sample
+                            dict_no_data[sample['id']] = sample.to_dict()
+                            # Write the base64 encoded image to the Sample
+                            sample['data'] = b64encode(
+                                image.read()).decode('utf-8')
+                            # Add the sample to the dict to be sent as workload
+                            dicts[sample['id']] = sample.to_dict()
 
-            try:
-                res = requests.post(
-                    edge_url, json=contents2, proxies=proxies)
-                print('response from ', edge_url, ' : ', res.text)
-                # time_rec = res.text['']
-                # print(f'confirmation recieved at : {time.strftime(' % Y-%m-%d % H: % M:
-                #  % S', time.localtime(1347517370))}')
-            except Exception as e:
-                print('Exception on sending', edge_url)
-                print(e)
+                    # Print the images names we are sending to ensure we are sending different images each time
+                    print('Sending to', edge_url)
+
+                    print_images_names(dict_no_data)
+
+                    contents2 = json.dumps(dicts)
+
+                    res = requests.post(
+                        edge_url, json=contents2, proxies=proxies)
+                    print('response from ', edge_url, ' : ', res.text)
+
+                    req_times.append(
+                        (datetime.now() - start_req_time).microseconds/1000)
+
+                end_time = (
+                    datetime.now() - start_time).microseconds/1000
+
+                data = {"edge_name": edge_url,
+                        "total_time_milli": end_time, "req_times_milli": req_times}
+
+                df2 = read_csv(workloader_csv_name, index_col=0)
+                df2 = df2.append(
+                    data, ignore_index=True)
+                df2.to_csv(workloader_csv_name, mode='w')
+
         except Exception as e2:
             print('Exception running thread', edge_url)
             print(e2)
-        sleep(time_sleep)
+            sleep(2)
 
 
 def print_images_names(dict_no_data: dict):
