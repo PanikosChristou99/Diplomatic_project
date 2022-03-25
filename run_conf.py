@@ -242,7 +242,7 @@ def step_one(secs: int):
 if __name__ == '__main__':
 
     secs = 60 * 10 * 3  # 30 mins
-    # step_one(secs)
+    step_one(secs)
     # step_two(secs)
     # step_three(secs)
     # step_four(secs)
