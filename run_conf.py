@@ -98,20 +98,23 @@ def step_one(secs: int):
 
     for bw in ["0", "1"]:
         for pre in ["", "25%", "50%", "75%", "99%"]:
-            write_new_env(default_env)
 
             for model1 in models:
                 other = [x for x in models if x != model1]
                 for model2 in other:
-
+                    write_new_env(default_env)
                     if pre != "":
-                        update_env(f'edge1_pre', 'BW,{bw}')
-                        update_env(f'edge1_pre', 'BW,{bw}')
+                        str1 = f'BW,{bw}'
+                        str2 = f'BW,{bw}'
+                        update_env('edge1_pre', str1)
+                        update_env('edge2_pre', str2)
                     else:
+                        str1 = f'BW,{bw},resize,{pre},quality,{pre}'
+                        str2 = f'BW,{bw},resize,{pre},quality,{pre}'
                         update_env(
-                            f'edge1_pre', 'BW,{bw},resize,{pre},quality,{pre}')
+                            'edge1_pre', str1)
                         update_env(
-                            f'edge1_pre', 'BW,{bw},resize,{pre},quality,{pre}')
+                            'edge2_pre', str2)
 
                     update_env('edge1_ml', model1)
                     update_env('edge2_ml', model2)
