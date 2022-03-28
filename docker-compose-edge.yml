@@ -92,7 +92,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: ${workload_edges}
-      Images: ${workload_edges_sleeps}
+      Images: ${workload_num_of_images}
       Sleep: ${workload_edges_sleeps}
       Monitor_sleep: ${workload_sleep}
     dns: <DNS server IP>
@@ -101,11 +101,9 @@ services:
       - ./volume/workload/stats:/app/stats
 
 # mongoseed:
-#   image: mongo
 #   container_name: mongoseed
 #   volumes:
 #     - ./mongoDB/init:/init
 #   command: mongoimport --host mongodb --db diplomatic_db --collection col
 #     --jsonArray --file /init/init.json && python3 /init/db_monitor.py
 #   depends_on:
-#     - mongodb

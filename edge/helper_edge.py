@@ -99,10 +99,10 @@ def preprocess_img(sample, image):
             resize = resize[:-1]
         resize = float(resize)/100
 
-        s = image.size
-        new0 = float(s[0])*resize
-        new1 = float(s[1])*resize
-        image = image.resize((int(new0), int(new1)))
+    s = image.size
+    new0 = float(s[0])*resize
+    new1 = float(s[1])*resize
+    image = image.resize((int(new0), int(new1)))
 
     quality = 100
 
@@ -133,7 +133,6 @@ def preprocess_img(sample, image):
     image = Image.open(new_path)
     # remove ot not fill space
     remove(new_path)
-
     return image, percent_smaller, prev_size, new_size
 
 

@@ -10,6 +10,7 @@ from time import ctime
 from flask import Flask, jsonify, request
 from PIL import Image
 from pandas import DataFrame, read_csv
+import pandas
 from psutil import cpu_count
 from torchvision import models
 from torch import device, cuda, set_num_threads
@@ -97,8 +98,7 @@ flask_cors.CORS(app)
 
 edge_csv_name_requests += '.csv'
 
-df = DataFrame(columns=collumns)
-
+df = pandas.DataFrame()
 df.to_csv(edge_csv_name_requests)
 
 

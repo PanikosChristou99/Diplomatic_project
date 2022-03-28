@@ -8,7 +8,7 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       Edges: ${workload_edges}
-      Images: ${workload_edges_sleeps}
+      Images: ${workload_num_of_images}
       Sleep: ${workload_edges_sleeps}
       Monitor_sleep: ${workload_sleep}
     dns: <DNS server IP>

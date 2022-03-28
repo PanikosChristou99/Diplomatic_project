@@ -89,17 +89,14 @@ df.to_csv(workloader_csv_name)
 df.to_csv(workloader_csv_name2)
 
 edge_urls = []
-images = []
 
 for i, edge in enumerate(edges):
 
     edge_url = 'http://' + edge + ':5000/endpoint'
     edge_urls.append(edge_url)
-    images.append(num_of_images[i])
 
-images.append(num_of_images[-1])
 get_event_loop().run_in_executor(
-    None, run_send_thread, workloader_csv_name2, dataset, images, edge_urls)  # fire and forget
+    None, run_send_thread, workloader_csv_name2, dataset, num_of_images, edge_urls)  # fire and forget
 
 
 print('Starting workloader monitor')
