@@ -247,7 +247,7 @@ def step_one(secs: int):
 #     write_to_done_file(string)
 if __name__ == '__main__':
 
-    secs = 60 * 10 * 3  # 30 mins
+    secs = 60 * 10  # 30 mins
     step_one(secs)
     # step_two(secs)
     # step_three(secs)

@@ -89,7 +89,7 @@ def preprocess_img(sample, image):
     for i, name in enumerate(pref_names):
         pref_dict[name] = pref_values[i]
 
-    # print(json.dumps(pref_dict, sort_keys=True, indent=4))
+    print(json.dumps(pref_dict, sort_keys=True, indent=4))
 
     resize = 100
 
@@ -99,10 +99,10 @@ def preprocess_img(sample, image):
             resize = resize[:-1]
         resize = float(resize)/100
 
-    s = image.size
-    new0 = float(s[0])*resize
-    new1 = float(s[1])*resize
-    image = image.resize((int(new0), int(new1)))
+        s = image.size
+        new0 = float(s[0])*resize
+        new1 = float(s[1])*resize
+        image = image.resize((int(new0), int(new1)))
 
     quality = 100
 
