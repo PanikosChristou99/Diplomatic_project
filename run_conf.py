@@ -103,7 +103,7 @@ def step_one(secs: int):
                 other = [x for x in models if x != model1]
                 for model2 in other:
                     write_new_env(default_env)
-                    if pre != "":
+                    if pre == "":
                         str1 = f'BW,{bw}'
                         str2 = f'BW,{bw}'
                         update_env('edge1_pre', str1)
