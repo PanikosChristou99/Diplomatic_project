@@ -93,6 +93,8 @@ default_env = {
 
 }
 
+open(done_file, 'w').close()
+
 
 def step_one(secs: int):
 
