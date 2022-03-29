@@ -96,7 +96,7 @@ default_env = {
 
 def step_one(secs: int):
 
-    for bw in ["1"]:
+    for bw in ["0"]:
         for pre in ["", "25%", "50%", "75%", "99%"]:
 
             for model1 in models:
