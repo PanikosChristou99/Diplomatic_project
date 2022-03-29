@@ -87,7 +87,7 @@ default_env = {
     'edge1_sleep': 4,
     'edge2_sleep': 4,
     'workload_edges': 'edge1,edge2',
-    'workload_num_of_images': '1,1,20',
+    'workload_num_of_images': '1,1,5',
     'workload_sleep': 4,
     'test_var': 'newvalue'
 
@@ -96,7 +96,7 @@ default_env = {
 
 def step_one(secs: int):
 
-    for bw in ["0", "1"]:
+    for bw in ["1"]:
         for pre in ["", "25%", "50%", "75%", "99%"]:
 
             for model1 in models:
@@ -125,7 +125,8 @@ def step_one(secs: int):
                     run_compose(secs)
 
                     curr_time = datetime.now().strftime('%H_%M_%d_%m')
-                    write_to_done_file('DONE,{curr_time}')
+                    string = f'DONE,{curr_time}'
+                    write_to_done_file(string)
 
 
 # def step_two(secs):
@@ -247,7 +248,7 @@ def step_one(secs: int):
 #     write_to_done_file(string)
 if __name__ == '__main__':
 
-    secs = 60 * 10  # 30 mins
+    secs = 60 * 10 * 2  # 6 mins
     step_one(secs)
     # step_two(secs)
     # step_three(secs)
