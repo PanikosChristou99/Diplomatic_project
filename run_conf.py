@@ -124,7 +124,7 @@ def step_one(secs: int):
                         update_env('edge2_ml', model2)
 
                         curr_time = datetime.now().strftime('%H_%M_%d_%m')
-                        string = f'{pre},{bw},{model1},{model2},{curr_time}'
+                        string = f'{str1},{str2},{bw},{model1},{model2},{curr_time}'
                         write_to_done_file(string)
                         run_compose(secs)
 
