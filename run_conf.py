@@ -99,36 +99,38 @@ open(done_file, 'w').close()
 def step_one(secs: int):
 
     for bw in ["0"]:
-        for pre in ["", "25%", "50%", "75%", "99%"]:
-
-            for model1 in models:
-                other = [x for x in models if x != model1]
-                for model2 in other:
-                    write_new_env(default_env)
-                    if pre == "":
+        for q in ["", "25%", "50%", "75%"]:
+            for r in ["", "25%", "50%", "75%"]:
+                for model1 in models:
+                    other = [x for x in models if x != model1]
+                    for model2 in other:
+                        write_new_env(default_env)
                         str1 = f'BW,{bw}'
                         str2 = f'BW,{bw}'
-                        update_env('edge1_pre', str1)
-                        update_env('edge2_pre', str2)
-                    else:
-                        str1 = f'BW,{bw},resize,{pre},quality,{pre}'
-                        str2 = f'BW,{bw},resize,{pre},quality,{pre}'
+
+                        if q != "":
+                            str1 = f'{str1},quality,{q}'
+                            str2 = f'{str2},quality,{q}'
+                        if r != "":
+                            str1 = f'{str1},resize,{r}'
+                            str2 = f'{str2},resize,{r}'
+
                         update_env(
                             'edge1_pre', str1)
                         update_env(
                             'edge2_pre', str2)
 
-                    update_env('edge1_ml', model1)
-                    update_env('edge2_ml', model2)
+                        update_env('edge1_ml', model1)
+                        update_env('edge2_ml', model2)
 
-                    curr_time = datetime.now().strftime('%H_%M_%d_%m')
-                    string = f'{pre},{bw},{model1},{model2},{curr_time}'
-                    write_to_done_file(string)
-                    run_compose(secs)
+                        curr_time = datetime.now().strftime('%H_%M_%d_%m')
+                        string = f'{pre},{bw},{model1},{model2},{curr_time}'
+                        write_to_done_file(string)
+                        run_compose(secs)
 
-                    curr_time = datetime.now().strftime('%H_%M_%d_%m')
-                    string = f'DONE,{curr_time}'
-                    write_to_done_file(string)
+                        curr_time = datetime.now().strftime('%H_%M_%d_%m')
+                        string = f'DONE,{curr_time}'
+                        write_to_done_file(string)
 
 
 # def step_two(secs):
