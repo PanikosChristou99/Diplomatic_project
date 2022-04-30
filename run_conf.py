@@ -73,6 +73,9 @@ def run_compose(sleep_time: int):
 done_file = "./proggress.txt"
 models = ["fasterrcnn_mobilenet_v3_large_320_fpn", "fasterrcnn_mobilenet_v3_large_fpn",
           "fasterrcnn_resnet50_fpn", "retinanet_resnet50_fpn", "maskrcnn_resnet50_fpn" , "fcos_resnet50_fpn" ,"keypointrcnn_resnet50_fpn","ssdlite320_mobilenet_v3_large" , "ssd300_vgg16" ]
+half = int(len(models)/2)
+models_1 = models[:half]
+models_2 = models[half:]
 prepproccessing_parameters = {
     'BW': [0, 1],
     "resize": ['25%', '75%'],
@@ -101,9 +104,9 @@ def step_one(secs: int):
     for bw in ["0"]:
         for q in ["", "25%", "50%", "75%"]:
             for r in ["", "25%", "50%", "75%"]:
-                for model1 in models:
-                    other = [x for x in models if x != model1]
-                    for model2 in other:
+                for model1 in models_1:
+
+                    for model2 in models_2:
                         write_new_env(default_env)
                         str1 = f'BW,{bw}'
                         str2 = f'BW,{bw}'
