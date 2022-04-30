@@ -72,7 +72,7 @@ def run_compose(sleep_time: int):
 
 done_file = "./proggress.txt"
 models = ["fasterrcnn_mobilenet_v3_large_320_fpn", "fasterrcnn_mobilenet_v3_large_fpn",
-          "fasterrcnn_resnet50_fpn", "retinanet_resnet50_fpn", "maskrcnn_resnet50_fpn"]
+          "fasterrcnn_resnet50_fpn", "retinanet_resnet50_fpn", "maskrcnn_resnet50_fpn" , "fcos_resnet50_fpn" ,"keypointrcnn_resnet50_fpn","ssdlite320_mobilenet_v3_large" , "ssd300_vgg16" ]
 prepproccessing_parameters = {
     'BW': [0, 1],
     "resize": ['25%', '75%'],
@@ -82,7 +82,7 @@ default_env = {
     'sleep_cloud': 4,
     'edge1_ml': 'fasterrcnn_mobilenet_v3_large_fpn',
     'edge2_ml': 'fasterrcnn_resnet50_fpn',
-    'edge1_pre': 'BW,1,resize,25%,quality,25%',
+    'edge1_pre': '',
     'edge2_pre': '',
     'edge1_sleep': 4,
     'edge2_sleep': 4,
