@@ -70,6 +70,7 @@ if 'ML' in environ and environ['ML'] != '':
     edge_csv_name_monitor += model_name + '_'
     collumns.append('ml_cycles')
 
+    model_name = environ['ML']
     method = getattr(models.detection, model_name)
     model = method(pretrained=True)
     print('Using ', model_name)

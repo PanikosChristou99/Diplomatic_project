@@ -16,6 +16,8 @@ WORKDIR /app
 
 RUN apt-get install libjpeg-dev -y
 
+RUN pip3 install hwcounter 
+
 RUN pip3 install --upgrade setuptools wheel
 
 RUN pip3 install scikit-build
