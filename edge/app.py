@@ -104,6 +104,7 @@ df.to_csv(edge_csv_name_requests)
 
 @app.route('/endpoint', methods=['POST'])
 async def hello():
+    content = request.get_json()
     try:
 
         print('I got content')

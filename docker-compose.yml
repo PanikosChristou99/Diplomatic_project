@@ -1,50 +1,15 @@
 version: "3"
 
 services:
-  # mongodb:
-  #   image: mongo
-  #   container_name: mongodb
-  #   environment:
-  #     MONGO_INITDB_DATABASE: diplomatic_db
-  #   command: mongod --port 27017 --nojournal --profile 0 --setParameter diagnosticDataCollectionEnabled=false
-  #   expose:
-  #     - 27017
-  #   volumes:
-  #     - ./mongoDB/database:/data/db
-  #   restart: unless-stopped
-  #   ports:
-  #     - "27017:27017"
-  #   logging:
-  #     driver: "none"
-  #   dns: <DNS server IP>
-
-  # db_monitor:
-  #   container_name: db_monitor
-  #   build: ./db_monitor
-  #   depends_on:
-  #     - mongodb
-  #   environment:
-  #     PYTHONUNBUFFERED: 1
-  #     Monitor_sleep: 60
-  #     Sleeps_to_print: 3
-  #   dns: <DNS server IP>
-  #   volumes:
-  #     - ./volume/db_monitor/log:/app/log
-  #     - ./volume/db_monitor/stats:/app/stats
-
-  # fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
+  # models are fasterrcnn_mobilenet_v3_large_320_fpn, fasterrcnn_mobilenet_v3_large_fpn, fasterrcnn_resnet50_f retinanet_resnet50_fpn, maskrcnn_resnet50_fpn
   cloud:
     container_name: cloud
     build: ./cloud
-    #TODO figure out if I need this since I don't use it
     ports:
       - "5000:5000"
     environment:
       PYTHONUNBUFFERED: 1
-      ML: ${cloud_ml}
       Monitor_sleep: ${sleep_cloud}
-    # depends_on:
-    #   - db_monitor
     dns: <DNS server IP>
     volumes:
       - ./volume/cloud/log:/app/log
@@ -53,7 +18,6 @@ services:
   edge1:
     container_name: edge1
     build: ./edge
-    #TODO figure out if I need this since I don't use it
     ports:
       - "5001:5001"
     environment:
@@ -72,7 +36,6 @@ services:
   edge2:
     container_name: edge2
     build: ./edge
-    #TODO figure out if I need this since I don't use it
     ports:
       - "5002:5002"
     environment:
@@ -97,19 +60,8 @@ services:
       PYTHONUNBUFFERED: 1
       Edges: ${workload_edges}
       Images: ${workload_num_of_images}
-      Sleep: ${workload_edges_sleeps}
       Monitor_sleep: ${workload_sleep}
     dns: <DNS server IP>
     volumes:
       - ./volume/workload/log:/app/log
       - ./volume/workload/stats:/app/stats
-
-# mongoseed:
-#   image: mongo
-#   container_name: mongoseed
-#   volumes:
-#     - ./mongoDB/init:/init
-#   command: mongoimport --host mongodb --db diplomatic_db --collection col
-#     --jsonArray --file /init/init.json && python3 /init/db_monitor.py
-#   depends_on:
-#     - mongodb
