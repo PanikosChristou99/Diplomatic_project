@@ -104,9 +104,13 @@ def step_one(secs: int):
     for bw in ["0"]:
         for q in ["", "25%", "50%", "75%"]:
             for r in ["", "25%", "50%", "75%"]:
-                for model1 in models_1:
 
-                    for model2 in models_2:
+                for model1 in models:
+                    others = [i for i in models if i != model1]
+                    for model2 in others:
+
+                        # for model1 in models_1:
+                        #     for model2 in models_2:
                         write_new_env(default_env)
                         str1 = f'BW,{bw}'
                         str2 = f'BW,{bw}'
@@ -255,7 +259,7 @@ def step_one(secs: int):
 #     write_to_done_file(string)
 if __name__ == '__main__':
 
-    secs = 60 * 6  # 6 mins
+    secs = 60 * 5  # 5 mins
     step_one(secs)
     # step_two(secs)
     # step_three(secs)
