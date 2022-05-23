@@ -64,7 +64,7 @@ def run_compose(sleep_time: int):
         f.write(str.encode('docker-compose stop\n'))
 
     with open(output_name, "a") as output:
-        process = subprocess.Popen('./temp.sh', shell=True, stdout=output)
+        process = subprocess.Popen('bash ./temp.sh', shell=True, stdout=output)
         process.wait()
 
     write_to_done_file("Pog")
